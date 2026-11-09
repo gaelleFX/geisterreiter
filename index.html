@@ -105,6 +105,7 @@ textarea{width:100%;min-height:110px;border-radius:16px;border:3px solid #dfd9ca
     <h1>👻 Escape: <span>Die Geisterreiter</span></h1>
     <div class="sub">Geisterritter, Kapitel 2: Drei tote Männer</div>
   </div>
+  <div class="pill" id="grp" style="display:none"></div>
   <div class="pill" title="Fehler">❌ <span id="err">0</span></div>
   <div class="pill" id="timer">⏱ 00:00</div>
   <button class="icon" id="bKey" title="Lehrerin">🔑</button>
@@ -122,6 +123,13 @@ textarea{width:100%;min-height:110px;border-radius:16px;border:3px solid #dfd9ca
   </aside>
 </main>
 
+<div class="ov" id="ovStart"><div class="box center" style="width:min(760px,100%)">
+  <div style="font-size:60px">👻</div><div class="big">Escape: Die Geisterreiter</div>
+  <p style="font-size:20px;color:#6a7080">Wie spielt ihr?</p>
+  <button class="btn" id="bBoard" style="width:100%;margin-bottom:16px">🖥️ An der Tafel (ganze Klasse)</button>
+  <p style="font-size:18px;font-weight:800;margin:10px 0">📱 Auf dem iPad: Wählt eure Gruppe</p>
+  <div id="pickGr" style="display:grid;grid-template-columns:repeat(7,1fr);gap:10px"></div>
+</div></div>
 <div class="ov" id="ovQ"><div class="box" id="qBox"></div></div>
 <div class="ov" id="ovMsg"><div class="box center" id="msgBox"></div></div>
 <div class="ov" id="ovPad"><div class="box center" style="width:min(460px,100%)">
@@ -138,7 +146,7 @@ const STATIONS = [
   {t:"match", tag:"Details finden", q:"Wer schläft wo? Verbinde.", ins:"Tippe links auf eine Person und dann rechts auf das passende Bett.",
    L:["Angus","Stu","Jon"], R:["im Einzelbett","oben im Etagenbett","unten im Etagenbett"],
    a:"Angus hat das Einzelbett. Stu schläft oben im Etagenbett und Jon unten."},
-  {t:"mc", tag:"Details finden", q:"Wie ist Stu?", o:["Er ist sehr groß und schüchtern.","Er ist klein und redet sehr viel.","Er ist müde und spricht nie."], c:1, a:"Stu ist klein und sehr gesprächig."},
+  {t:"mc", tag:"Details finden", q:"Wie ist Stu?", o:["Er ist klein und schüchtern.","Er ist klein und redet sehr viel.","Er ist groß und redet sehr viel.","Er ist groß und schüchtern."], c:1, a:"Stu ist klein und sehr gesprächig."},
   {t:"multi", tag:"Details finden", q:"Über Angus' Bett hängen Fotos. Was ist auf den Fotos?", ins:"Tippe alle richtigen Antworten an. Es sind mehrere!",
    o:["ein Hund","seine Familie","zwei Kanarienvögel","eine Katze","eine Schildkröte","sein Rugby-Team"], c:[0,2,4],
    a:"Ein Hund, zwei Kanarienvögel und eine Schildkröte."},
@@ -147,38 +155,38 @@ const STATIONS = [
     ["Stu ist größer als Angus.",false],
     ["Stu malt sich falsche Tattoos auf die Haut.",true]],
    a:"Angus singt im Chor. Stu ist klein. Er malt sich Tattoos mit Markern."},
-  {t:"open", tag:"Gründe erklären", q:"Warum ist Jon im Internat so unglücklich?", a:"Er hat Heimweh. Er möchte wieder nach Hause zu seiner Mutter."}
+  {t:"open", tag:"Gründe erklären", q:"Jon ist im Internat sehr unglücklich. Welches Gefühl hat er? Wohin möchte er?", kw:["heimweh", "hause", "mutter", "mama", "heim"], a:"Er hat Heimweh. Er möchte nach Hause zu seiner Mutter."}
  ]},
  {nm:"Die sechste Nacht", em:"🌙", info:"Was hört Jon?", digit:"6", why:"6, weil die Reiter in der sechsten Nacht kommen.", qs:[
-  {t:"mc", tag:"Global verstehen", q:"Worum geht es in dem Text, den ihr gehört habt?", o:["Jon und seine Freunde feiern nachts eine Party.","Jon reitet nachts heimlich auf einem Pferd.","Jon sieht nachts drei Geisterreiter vor dem Fenster."], c:2, a:"Jon sieht in der Nacht drei bleiche Reiter vor dem Fenster."},
-  {t:"mc", tag:"Details finden", q:"In welcher Nacht passiert das?", o:["in der sechsten Nacht","in der ersten Nacht","in der dritten Nacht"], c:0, a:"Es ist Jons sechste Nacht im Internat."},
-  {t:"mc", tag:"Details finden", q:"Was macht Angus im Schlaf?", o:["Er spricht mit seinem Hund.","Er summt ein Lied für den Chor.","Er schnarcht sehr laut."], c:1, a:"Angus summt im Schlaf eine Hymne. Er übt für den Chor."},
-  {t:"mc", tag:"Details finden", q:"Was wünscht sich Jon?", o:["ein eigenes Zimmer","ein Pferd","Seine Mutter soll ihn nach Hause holen."], c:2, a:"Jon hofft, dass seine Mutter nachgibt und ihn nach Hause holt."},
-  {t:"open", tag:"Gründe erklären", q:"Jon will sich das Kissen über den Kopf ziehen. Warum?", a:"Er will das Summen von Angus nicht mehr hören."},
-  {t:"open", tag:"Details finden", q:"Was hört Jon plötzlich draußen?", a:"Er hört das Schnauben von Pferden."},
-  {t:"mc", tag:"Details finden", q:"Jon hört Pferde. Wer kommt da? Was denkt Jon zuerst?", o:["Edward Popplewell","Stu","sein Vater"], c:0, a:"Jon denkt, Edward Popplewell kommt vielleicht mit dem Pferd vom Pub nach Hause."},
-  {t:"mc", tag:"Details finden", q:"Wie ist das Wetter in dieser Nacht?", o:["Es schneit.","Es ist warm und hell.","Es ist nass vom Regen."], c:2, a:"Es ist eine regennasse Nacht."}
+  {t:"mc", tag:"Global verstehen", q:"Worum geht es in dem Text, den ihr gehört habt?", o:["Jon träumt von Geistern und wacht schreiend auf.","Jon reitet nachts heimlich auf einem Pferd.","Jon sieht nachts Geister, und seine Freunde glauben ihm sofort.","Jon sieht nachts Geister, aber seine Freunde sehen nichts."], c:3, a:"Jon sieht drei Geisterreiter vor dem Fenster. Stu und Angus sehen nichts."},
+  {t:"mc", tag:"Details finden", q:"In welcher Nacht passiert das?", o:["in der sechsten Nacht","in der ersten Nacht","in der fünften Nacht","in der siebten Nacht"], c:0, a:"Es ist Jons sechste Nacht im Internat."},
+  {t:"mc", tag:"Details finden", q:"Was macht Angus im Schlaf?", o:["Er singt laut ein Lied aus dem Radio.","Er spricht im Schlaf über seinen Hund.","Er summt eine Hymne, die er für den Chor übt.","Er schnarcht so laut, dass Jon aufwacht."], c:2, a:"Angus summt im Schlaf eine Hymne. Er übt für den Chor."},
+  {t:"mc", tag:"Details finden", q:"Was wünscht sich Jon?", o:["Er will in ein anderes Zimmer umziehen.","Er möchte im Chor singen.","Seine Mutter soll ihn nach Hause holen.","Seine Mutter soll ihn im Internat besuchen."], c:2, a:"Jon hofft, dass seine Mutter nachgibt und ihn nach Hause holt."},
+  {t:"open", tag:"Gründe erklären", q:"Jon will sich das Kissen über den Kopf ziehen. Was will er nicht mehr hören?", kw:["summ", "angus", "sing", "lied", "hymne", "gesang"], a:"Er will das Summen von Angus nicht mehr hören."},
+  {t:"open", tag:"Details finden", q:"Jon hört plötzlich ein Geräusch draußen. Von welchen Tieren kommt es?", kw:["pferd"], a:"Von Pferden. Jon hört das Schnauben der Pferde."},
+  {t:"mc", tag:"Details finden", q:"Jon hört Pferde. Wer kommt da? Was denkt Jon zuerst?", o:["Stu kommt heimlich nach Hause.","Edward Popplewell kommt mit dem Pferd vom Pub nach Hause.","Ein Lehrer reitet zur Kathedrale.","Edward Popplewell bringt die Pferde in den Stall."], c:1, a:"Jon denkt, Edward Popplewell kommt vielleicht mit dem Pferd vom Pub nach Hause."},
+  {t:"mc", tag:"Details finden", q:"Wie ist das Wetter in dieser Nacht?", o:["Es ist eine kalte, klare Nacht.","Es ist eine neblige, stille Nacht.","Es schneit.","Es ist eine regennasse Nacht."], c:3, a:"Es ist eine regennasse Nacht."}
  ]},
  {nm:"Die Reiter", em:"🐎", info:"Wer wartet draußen?", digit:"3", why:"3, wie die drei Reiter vor dem Fenster.", qs:[
-  {t:"mc", tag:"Details finden", q:"Wie viele Reiter sieht Jon?", o:["zwei","drei","vier"], c:1, a:"Jon sieht drei Reiter."},
+  {t:"mc", tag:"Details finden", q:"Wie viele Reiter sieht Jon?", o:["drei","vier","fünf","zwei"], c:0, a:"Jon sieht drei Reiter."},
   {t:"multi", tag:"Details finden", q:"Wie sehen die Reiter aus?", ins:"Tippe alle richtigen Antworten an. Es sind mehrere!", o:["bleich","bunt","durchsichtig","fröhlich","mit Schwertern","sehr klein"], c:[0,2,4],
    a:"Die Reiter sind bleich und durchsichtig. Sie haben Schwerter."},
-  {t:"mc", tag:"Details finden", q:"Jon schaut den größten Reiter an. Was sieht er durch seinen Körper?", o:["den Mond","die Mauer","die Kathedrale"], c:1, a:"Durch seinen Körper sieht Jon die Ziegel der Mauer um den Garten."},
-  {t:"mc", tag:"Details finden", q:"Was ist das Schlimmste an den Reitern?", o:["ihre Augen","ihre Stimmen","ihre Hände"], c:0, a:"Am furchtbarsten sind ihre Augen: wie Brandlöcher."},
-  {t:"mc", tag:"Details finden", q:"Wie sehen die Pferde aus?", o:["schwarz, stark und schnell","weiß, schön und glänzend","bleich, mit grauem Fell und Knochen"], c:2, a:"Die Pferde sind so bleich wie die Reiter. Man sieht fast ihre Knochen."},
-  {t:"mc", tag:"Details finden", q:"Jon hat große Angst. Was kann er nicht tun?", o:["Er kann nicht mal die Arme heben.","Er kann nicht atmen.","Er kann nicht sprechen."], c:0, a:"Vor Angst kann Jon nicht mal die Arme heben."}
+  {t:"mc", tag:"Details finden", q:"Jon schaut den größten Reiter an. Was sieht er durch seinen Körper?", o:["den Mond","die Ziegel der Mauer","den Baum hinter ihm","die Kathedrale"], c:1, a:"Durch den größten Reiter sieht Jon die Ziegel der Mauer. Den Baum sieht er durch die zwei anderen Reiter."},
+  {t:"mc", tag:"Details finden", q:"Was ist das Schlimmste an den Reitern?", o:["ihre Schwerter","die Streifen an ihren Hälsen","ihre Augen","ihre Pferde"], c:2, a:"Am furchtbarsten sind ihre Augen: wie Brandlöcher."},
+  {t:"mc", tag:"Details finden", q:"Wie sehen die Pferde aus?", o:["weiß und glänzend wie Schnee","braun, mit langen Mähnen","schwarz, mit roten Augen","bleich wie die Reiter, mit aschgrauem Fell"], c:3, a:"Die Pferde sind so bleich wie die Reiter. Man sieht fast ihre Knochen."},
+  {t:"mc", tag:"Details finden", q:"Jon hat große Angst. Was kann er nicht tun?", o:["Er kann nicht mal die Arme heben.","Er kann nicht atmen.","Er kann nicht schreien.","Er kann sich nicht vom Fenster wegdrehen."], c:0, a:"Vor Angst kann Jon nicht mal die Arme heben."}
  ]},
  {nm:"Am Fenster", em:"🪟", info:"Was machen Stu und Angus?", digit:"2", why:"2, weil Stu und Angus die Reiter nicht sehen.", qs:[
   {t:"match", tag:"Details finden", q:"Wer sagt was? Verbinde.", ins:"Tippe links auf einen Satz und dann rechts auf die Person.",
    L:["„Was starrst du da draußen an?“","„Lass ihn in Ruhe!“","„Seid ihr blind?“"], R:["Stu","Angus","Jon"],
    a:"Stu fragt, was Jon anstarrt. Angus sagt: Lass ihn in Ruhe! Jon ruft: Seid ihr blind?"},
-  {t:"open", tag:"Details finden", q:"Was macht der größte Geist?", a:"Er zeigt mit dem knochigen Finger auf Jon. Sein Mund formt eine Drohung."},
-  {t:"mc", tag:"Details finden", q:"Stu schaut aus dem Fenster. Was sieht er?", o:["einen Hund im Garten","nichts, nur ein paar Mülleimer","die drei Reiter"], c:1, a:"Stu sieht nichts, nur ein paar Mülleimer. Er kann die Geister nicht sehen."},
-  {t:"mc", tag:"Gründe erklären", q:"Was denkt Angus über Jon?", o:["Jon ist krank.","Jon macht einen Witz.","Jon schlafwandelt."], c:2, a:"Angus denkt, Jon schlafwandelt."},
-  {t:"open", tag:"Gründe erklären", q:"Stu schaut besorgt zur Tür. Warum?", a:"Jon ist sehr laut. Stu hat Angst, dass die Popplewells aufwachen."},
-  {t:"open", tag:"Details finden", q:"Was macht der Geist mit dem Hamstergesicht?", a:"Er grinst und zieht langsam sein Schwert. Blut tropft von der Klinge."},
-  {t:"mc", tag:"Details finden", q:"Blut tropft vom Schwert. Was fühlt Jon?", o:["Er fühlt einen scharfen Schmerz in der Brust.","Er hat plötzlich großen Hunger.","Ihm wird sehr warm."], c:0, a:"Jon fühlt einen scharfen Schmerz in der Brust und fällt auf die Knie."},
-  {t:"mc", tag:"Details finden", q:"Wo versteckt sich Jon?", o:["unter seinem Bett","hinter der Tür","unter dem Fensterbrett"], c:2, a:"Jon kauert zitternd unter dem Fensterbrett."}
+  {t:"open", tag:"Details finden", q:"Der größte Geist zeigt auf jemanden. Auf wen zeigt er? Womit zeigt er?", kw:["jon", "finger", "knoch"], a:"Er zeigt mit seinem knochigen Finger auf Jon."},
+  {t:"mc", tag:"Details finden", q:"Stu schaut aus dem Fenster. Was sieht er?", o:["eine Katze auf der Mauer","einen bleichen Reiter","einen Hund im Garten","nur ein paar Mülleimer"], c:3, a:"Stu sieht nichts, nur ein paar Mülleimer. Er kann die Geister nicht sehen."},
+  {t:"mc", tag:"Gründe erklären", q:"Was denkt Angus über Jon?", o:["Jon will ihnen Angst machen.","Jon schlafwandelt.","Jon ist krank.","Jon hat einen Albtraum."], c:1, a:"Angus denkt, Jon schlafwandelt."},
+  {t:"open", tag:"Gründe erklären", q:"Jon ruft ganz laut: „Seid ihr blind?“ Stu schaut besorgt zur Tür. Wer soll nicht aufwachen?", kw:["pop", "alma", "edward", "eltern", "erwachsen"], a:"Die Popplewells sollen nicht aufwachen. Jon ist zu laut."},
+  {t:"open", tag:"Details finden", q:"Der Geist mit dem Hamstergesicht grinst. Was zieht er dann langsam heraus? Was tropft davon herunter?", kw:["schwert", "blut", "klinge"], a:"Er zieht sein Schwert. Blut tropft von der Klinge."},
+  {t:"mc", tag:"Details finden", q:"Blut tropft vom Schwert. Was fühlt Jon?", o:["Hunger im Bauch","einen Schmerz im Hals","einen scharfen Schmerz in der Brust","Kälte in den Händen"], c:2, a:"Jon fühlt einen scharfen Schmerz in der Brust und fällt auf die Knie."},
+  {t:"mc", tag:"Details finden", q:"Der Geist zieht sein Schwert. Wo versteckt sich Jon?", o:["unter dem Fensterbrett","unter seiner Bettdecke","hinter Angus' Bett","hinter der Tür"], c:0, a:"Jon kauert zitternd unter dem Fensterbrett. Unter die Bettdecke kriecht er erst später."}
  ]},
  {nm:"Das Ende der Nacht", em:"🕯️", info:"Wie geht die Nacht zu Ende?", digit:"1", why:"1, weil nur einer die Reiter sieht: Jon.", qs:[
   {t:"tf", tag:"Details finden", q:"Richtig oder falsch?", items:[
@@ -189,16 +197,18 @@ const STATIONS = [
   {t:"order", tag:"Reihenfolge", q:"Was passiert zuerst? Bringt die Sätze in die richtige Reihenfolge.", ins:"Tippe die Sätze nacheinander an: zuerst, dann, danach … zum Schluss.",
    items:["Jon hört Pferde draußen.","Jon sieht drei bleiche Reiter.","Stu schaut aus dem Fenster und sieht nichts.","Ein Geist zieht sein Schwert und Jon fällt auf die Knie.","Jon schläft endlich ein."],
    a:"Pferde hören, Reiter sehen, Stu sieht nichts, das Schwert, und am Ende schläft Jon ein."},
-  {t:"mc", tag:"Gründe erklären", q:"Was denkt Jon am Ende?", o:["Stu und Angus haben ihm einen Streich gespielt.","Er hatte Halluzinationen, weil er Heimweh hat und kaum etwas isst.","Die Reiter wohnen im Garten des Internats."], c:1,
-   a:"Jon denkt, er wird verrückt vor Heimweh, oder er hat Halluzinationen, weil er kaum etwas isst."},
-  {t:"mc", tag:"Details finden", q:"Was isst Jon in diesen Tagen fast nur?", o:["Schokolade","Weingummis","Äpfel"], c:1, a:"Jon isst fast nur die Weingummis von Stu und Angus."},
-  {t:"open", tag:"Details finden", q:"Jon geht später noch ein paarmal ans Fenster. Was sieht er?", a:"Er sieht nur die leere Straße vor der beleuchteten Kathedrale."},
-  {t:"open", tag:"Details finden", q:"Was nimmt sich Jon vor, bevor er einschläft?", a:"Er will von nun an das Essen im Internat essen."},
-  {t:"open", tag:"Zwischen den Zeilen", tag2:true, q:"Waren die Reiter echt? Was glaubst du? Begründe deine Meinung.", a:"Hier gibt es mehrere richtige Antworten, wenn sie gut begründet sind. Zum Beispiel: Ja, denn Jon hat sie genau gesehen und den Schmerz gespürt. Oder: Nein, denn Stu hat nichts gesehen."}
+  {t:"mc", tag:"Gründe erklären", q:"Was denkt Jon am Ende?", o:["Er hat nur schlecht geträumt.","Er ist verrückt vor Heimweh oder hat Halluzinationen.","Die Reiter wohnen im Garten des Internats.","Stu hat ihm einen Streich gespielt."], c:1, a:"Jon denkt, er wird verrückt vor Heimweh, oder er hat Halluzinationen, weil er kaum etwas isst."},
+  {t:"mc", tag:"Details finden", q:"Was isst Jon in diesen Tagen fast nur?", o:["Äpfel und Brot","Schokolade von Stu","das Essen im Internat","Weingummis von Stu und Angus"], c:3, a:"Jon isst fast nur die Weingummis von Stu und Angus. Das Internatsessen will er erst ab jetzt essen."},
+  {t:"open", tag:"Details finden", q:"Jon geht später noch ein paarmal ans Fenster. Sieht er die Reiter wieder? Was sieht er draußen?", kw:["nein", "nicht", "nichts", "niemand", "leer", "strasse", "kathedrale"], a:"Nein. Er sieht nur die leere Straße vor der beleuchteten Kathedrale."},
+  {t:"open", tag:"Details finden", q:"Vor dem Einschlafen nimmt sich Jon etwas vor. Was will er ab jetzt essen?", kw:["internat", "schule", "kantine", "essen"], a:"Er will ab jetzt das Essen im Internat essen."},
+  {t:"open", tag:"Zwischen den Zeilen", tag2:true, q:"Waren die Reiter echt, oder hat Jon sie sich nur eingebildet? Was glaubst du? Begründe mit einem Beispiel aus dem Text.", kw:["weil", "denn", "deshalb", "darum", "da "], a:"Hier gibt es mehrere richtige Antworten, wenn sie gut begründet sind. Zum Beispiel: Ja, denn Jon hat sie genau gesehen und den Schmerz gespürt. Oder: Nein, denn Stu hat nichts gesehen."}
  ]}
 ];
+let MODE="board", GROUP=0;
+const digitOf = i => MODE==="board" ? STATIONS[i].digit : String((+STATIONS[i].digit + GROUP*(i+2))%10);
+const codeNow = () => STATIONS.map((_,i)=>digitOf(i)).join("");
 const TOTAL = STATIONS.reduce((n,s)=>n+s.qs.length,0);
-const CODE = STATIONS.map(s=>s.digit).join("");
+
 
 const fresh=()=>({cur:0, qi:STATIONS.map(()=>0), done:STATIONS.map(()=>false), err:0, start:null, end:null});
 let st = fresh();
@@ -210,15 +220,16 @@ function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor
 function fmt(ms){const s=Math.floor(ms/1000);return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0")}
 setInterval(()=>{ if(st.start) $("timer").textContent="⏱ "+fmt((st.end||Date.now())-st.start); },500);
 
-function render(){
+function save(){ try{ localStorage.setItem("gr-escape",JSON.stringify({st,MODE,GROUP})); }catch(e){} }
+function render(){ save();
   $("err").textContent=st.err;
   $("stations").innerHTML = STATIONS.map((s,i)=>{
     const cls = st.done[i]?"done":(i===st.cur?"active":(i>st.cur?"locked":""));
     const prog = s.qs.map((_,k)=>`<i class="${k<st.qi[i]?"ok":""}"></i>`).join("");
     return `<button class="st ${cls}" data-i="${i}"><div class="em">${s.em}</div><div class="nm">${i+1}. ${s.nm}</div><div class="info">${s.info} · ${s.qs.length} Rätsel</div><div class="prog">${prog}</div></button>`;
   }).join("");
-  $("slots").innerHTML = STATIONS.map((s,i)=>`<div class="slot ${st.done[i]?"f":""}">${st.done[i]?s.digit:"?"}</div>`).join("");
-  const found = STATIONS.filter((s,i)=>st.done[i]).map(s=>"• "+s.why).join("<br>");
+  $("slots").innerHTML = STATIONS.map((s,i)=>`<div class="slot ${st.done[i]?"f":""}">${st.done[i]?digitOf(i):"?"}</div>`).join("");
+  const found = MODE==="board" ? STATIONS.filter((s,i)=>st.done[i]).map(s=>"• "+s.why).join("<br>") : "";
   $("clues").innerHTML = found || "Findet die fünf Ziffern. Die Reihenfolge ist die Reihenfolge der Verstecke.";
   $("bDoor").classList.toggle("ready", st.done.every(x=>x));
   document.querySelectorAll(".st").forEach(b=>b.onclick=()=>openStation(+b.dataset.i));
@@ -236,13 +247,13 @@ function showQ(){
   qsel = {q};
   let body="";
   if(q.t==="mc"){
-    body=`<div class="opts">${q.o.map((o,k)=>`<button class="opt" data-k="${k}"><b>${"ABC"[k]}</b>${esc(o)}</button>`).join("")}</div>`;
+    body=`<div class="opts">${q.o.map((o,k)=>`<button class="opt" data-k="${k}"><b>${"ABCD"[k]}</b>${esc(o)}</button>`).join("")}</div>`;
   } else if(q.t==="tf"){
     qsel.v=q.items.map(()=>null);
     body=`<div class="opts">${q.items.map((it,k)=>`<div class="tfrow" data-k="${k}"><span>${esc(it[0])}</span><button class="tfb r" data-v="1">✓ richtig</button><button class="tfb f" data-v="0">✗ falsch</button></div>`).join("")}</div>`;
   } else if(q.t==="multi"){
     qsel.s=new Set();
-    body=`<div class="opts" style="grid-template-columns:1fr 1fr">${q.o.map((o,k)=>`<button class="opt" data-k="${k}"><b>○</b>${esc(o)}</button>`).join("")}</div>`;
+    body=`<div class="opts" style="grid-template-columns:1fr 1fr">${shuffle(q.o.map((_,k)=>k)).map(k=>`<button class="opt" data-k="${k}"><b>○</b>${esc(q.o[k])}</button>`).join("")}</div>`;
   } else if(q.t==="match"){
     qsel.ro=shuffle(q.R.map((_,k)=>k)); qsel.p={}; qsel.l=null;
     body=`<div class="match"><div class="mcol" id="mL">${q.L.map((l,k)=>`<button class="mi" data-l="${k}">${esc(l)}</button>`).join("")}</div><div class="mcol" id="mR">${qsel.ro.map(k=>`<button class="mi" data-r="${k}">${esc(q.R[k])}</button>`).join("")}</div></div>`;
@@ -262,7 +273,7 @@ function showQ(){
       <button class="btn sec" onclick="closeQ()">Zurück</button>
       ${q.t==="order"?`<button class="btn sec" id="bReset">↺ Neu</button>`:""}
       ${needCheck?`<button class="btn" id="bCheck">Prüfen</button>`:""}
-      ${q.t==="open"?`<button class="btn" id="bDone">Fertig ✋</button>`:""}
+      ${q.t==="open"?`<button class="btn" id="bDone">${MODE==="board"?"Fertig ✋":"Lösung vergleichen"}</button>`:""}
     </div>`;
   $("ovQ").classList.add("show");
   wire(q);
@@ -340,11 +351,22 @@ function wire(q){
   if(q.t==="open"){
     $("bDone").onclick=()=>{
       if(!$("ta").value.trim()){ hint("Schreibt zuerst eine Antwort."); return; }
-      askPin(()=>teacherJudge());
+      if(MODE==="board") askPin(()=>teacherJudge());
+      else if(!kwOk(q, $("ta").value)) hint("Eure Antwort passt noch nicht genau zur Frage. Lest die Frage nochmal und ergänzt eure Antwort.");
+      else selfCheck();
     };
   }
 }
 
+function norm(t){ return (" "+t+" ").toLowerCase().replace(/ß/g,"ss").replace(/ä/g,"a").replace(/ö/g,"o").replace(/ü/g,"u"); }
+function kwOk(q,txt){ if(!q.kw) return true; const t=norm(txt); return q.kw.some(k=>t.includes(norm(k).trim()==="da"?" da ":norm(k).trim())); }
+function selfCheck(){
+  const q=qsel.q; $("ta").disabled=true;
+  fbShow("good","💡 Vergleicht mit der Lösung: "+q.a);
+  $("qActs").innerHTML=`<button class="btn warn" id="sNo">✗ Nicht ganz</button><button class="btn ok" id="sYes">✓ Wir hatten es richtig</button>`;
+  $("sYes").onclick=next;
+  $("sNo").onclick=()=>{ st.err++; next(); };
+}
 function teacherJudge(){
   const q=qsel.q;
   $("qActs").innerHTML=`<button class="btn sec" id="tSol">Lösung zeigen</button><button class="btn warn" id="tNo">✗ Nochmal versuchen</button><button class="btn ok" id="tYes">✓ Richtig</button>`;
@@ -374,7 +396,7 @@ function next(){
   if(st.qi[i]>=STATIONS[i].qs.length){
     st.done[i]=true; if(i<STATIONS.length-1) st.cur=i+1;
     closeQ(); render();
-    msg(`<div class="big">${STATIONS[i].em} Versteck geknackt!</div><p style="font-size:20px">Ihr habt eine Ziffer gefunden:</p><div class="digitshow">${STATIONS[i].digit}</div><p style="font-size:18px;color:#6a7080">${STATIONS[i].why}</p><div class="acts" style="justify-content:center"><button class="btn" onclick="closeMsg()">Super!</button></div>`);
+    msg(`<div class="big">${STATIONS[i].em} Versteck geknackt!</div><p style="font-size:20px">Ihr habt eine Ziffer gefunden:</p><div class="digitshow">${digitOf(i)}</div>${MODE==="board"?`<p style="font-size:18px;color:#6a7080">${STATIONS[i].why}</p>`:""}<div class="acts" style="justify-content:center"><button class="btn" onclick="closeMsg()">Super!</button></div>`);
     return;
   }
   render(); showQ();
@@ -401,19 +423,29 @@ function alert2(){ if($("ovQ").classList.contains("show")) hint("Falscher Lehrer
 $("bDoor").onclick=()=>{
   if(!st.done.every(x=>x)){ msg(`<div class="big">🚪 Die Tür ist verschlossen</div><p style="font-size:20px">Ihr braucht zuerst alle fünf Ziffern.</p><div class="acts" style="justify-content:center"><button class="btn" onclick="closeMsg()">OK</button></div>`); return; }
   openPad("🔐 Code eingeben",false,v=>{
-    if(v===CODE){
+    if(v===codeNow()){
       st.end=Date.now();
       msg(`<div style="font-size:70px">🎉🚪</div><div class="big">Geschafft! Die Tür ist offen!</div><p style="font-size:22px">Jon, Angus und Stu sind in Sicherheit.<br>Zeit: <b>${fmt(st.end-st.start)}</b> · Fehler: <b>${st.err}</b></p><p style="font-size:20px;color:#6a7080">Aber kommen die Reiter in der nächsten Nacht zurück? 👻<br>Schreibt jetzt eure Fortsetzung!</p><div class="acts" style="justify-content:center"><button class="btn" onclick="closeMsg()">Schließen</button></div>`);
     } else { st.err++; render(); msg(`<div class="big">❌ Falscher Code</div><p style="font-size:20px">Schaut euch die Ziffern nochmal genau an.</p><div class="acts" style="justify-content:center"><button class="btn" onclick="closeMsg()">OK</button></div>`); }
-  }, CODE.length);
+  }, STATIONS.length);
 };
 $("bKey").onclick=()=>askPin(()=>msg(`<div class="big">🔑 Lehrerin</div><div class="acts" style="justify-content:center;flex-direction:column;align-items:stretch">
   <button class="btn sec" onclick="skipQ()">Diese Frage überspringen</button>
   <button class="btn warn" onclick="restart()">Spiel neu starten</button>
+  <button class="btn sec" onclick="restart();showStart()">Spielmodus / Gruppe wechseln</button>
   <button class="btn" onclick="closeMsg()">Schließen</button></div>`));
 function restart(){st=fresh();$("timer").textContent="⏱ 00:00";closeMsg();closeQ();render();}
 function skipQ(){closeMsg(); if(st.done.every(x=>x)) return; if(!st.start) st.start=Date.now(); qsel={q:STATIONS[st.cur].qs[st.qi[st.cur]]}; next(); }
-render();
+function showStart(){ $("ovStart").classList.add("show"); }
+function startMode(m,g){ MODE=m; GROUP=g; $("grp").style.display=m==="board"?"none":""; $("grp").textContent="👥 Gruppe "+g; $("ovStart").classList.remove("show"); render(); }
+$("bBoard").onclick=()=>startMode("board",0);
+$("pickGr").innerHTML=[1,2,3,4,5,6,7].map(g=>`<button class="btn sec" data-g="${g}" style="padding:16px 0">${g}</button>`).join("");
+$("pickGr").querySelectorAll("button").forEach(b=>b.onclick=()=>startMode("group",+b.dataset.g));
+(function init(){
+  let d=null; try{ d=JSON.parse(localStorage.getItem("gr-escape")); }catch(e){}
+  if(d && d.st && d.st.start && !d.st.end){ st=d.st; startMode(d.MODE,d.GROUP); }
+  else { render(); showStart(); }
+})();
 </script>
 </body>
 </html>
