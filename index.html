@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Escape: Die Geisterreiter</title>
+<style>
+:root{
+  --ink:#f1eee6; --muted:#9ea7bb; --line:rgba(255,255,255,.13);
+  --ghost:#cfe8f0; --green:#8fdc6a; --red:#e5574b; --gold:#ffd25a; --card:#1b2233; --card2:#242d42;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{
+  background: radial-gradient(ellipse at 50% 30%, rgba(160,200,230,.10), transparent 55%),
+              linear-gradient(180deg,#141a28,#0a0d16);
+  color:var(--ink); font-family: ui-rounded,"SF Pro Rounded","Nunito","Segoe UI",system-ui,sans-serif;
+  min-height:100vh; display:flex; flex-direction:column; user-select:none; -webkit-user-select:none;
+}
+button{font:inherit;color:inherit;border:none;background:none;cursor:pointer;touch-action:manipulation}
+header{display:flex;align-items:center;gap:14px;padding:14px 24px;flex-wrap:wrap}
+.brand{margin-right:auto}
+h1{margin:0;font-size:clamp(22px,2.4vw,34px)}
+h1 span{color:var(--ghost)}
+.sub{color:var(--muted);font-size:clamp(13px,1.1vw,16px)}
+.pill{background:rgba(0,0,0,.35);border:2px solid var(--line);border-radius:14px;padding:6px 16px;font-weight:800;font-size:clamp(18px,1.8vw,26px);font-variant-numeric:tabular-nums}
+.icon{width:48px;height:48px;border-radius:14px;background:rgba(255,255,255,.08);border:1px solid var(--line);font-size:22px}
+main{flex:1;display:grid;grid-template-columns:minmax(0,1fr) clamp(260px,25vw,370px);gap:24px;padding:8px 24px 24px;width:min(1600px,100%);margin:0 auto}
+.story{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:18px;padding:16px 20px;font-size:clamp(15px,1.3vw,19px);line-height:1.5;margin-bottom:18px}
+.stations{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.st{position:relative;background:linear-gradient(160deg,var(--card2),var(--card));border:2px solid var(--line);border-radius:22px;padding:20px;min-height:clamp(150px,20vh,230px);text-align:left;display:flex;flex-direction:column;gap:6px;transition:transform .15s}
+.st:not(.locked):hover{transform:translateY(-3px)}
+.st .em{font-size:clamp(40px,4.5vw,64px);line-height:1}
+.st .nm{font-weight:900;font-size:clamp(18px,1.7vw,26px)}
+.st .info{color:var(--muted);font-size:clamp(13px,1.1vw,16px)}
+.st.locked{opacity:.38;cursor:not-allowed;filter:grayscale(.7)}
+.st.locked::after{content:"🔒";position:absolute;top:14px;right:16px;font-size:26px}
+.st.active{border-color:var(--ghost);box-shadow:0 0 0 4px rgba(207,232,240,.15),0 0 30px rgba(207,232,240,.18)}
+.st.done{border-color:var(--green)}
+.st.done::after{content:"✓";position:absolute;top:10px;right:16px;font-size:30px;color:var(--green);font-weight:900}
+.prog{display:flex;gap:6px;margin-top:auto}
+.prog i{flex:1;height:8px;border-radius:5px;background:rgba(255,255,255,.12)}
+.prog i.ok{background:var(--green)}
+aside{background:rgba(0,0,0,.28);border:2px solid var(--line);border-radius:22px;padding:20px;display:flex;flex-direction:column;gap:14px}
+aside h2{margin:0;font-size:clamp(18px,1.6vw,24px)}
+.slots{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.slot{aspect-ratio:3/4;border-radius:14px;border:2px dashed var(--line);display:grid;place-items:center;font-size:clamp(30px,3.4vw,52px);font-weight:900;color:var(--gold);background:rgba(255,255,255,.03)}
+.slot.f{border-style:solid;border-color:var(--gold)}
+.hint{font-size:clamp(12px,1vw,15px);color:var(--muted);line-height:1.45}
+.door{margin-top:auto;padding:16px;border-radius:16px;font-weight:900;font-size:clamp(17px,1.5vw,22px);background:rgba(255,255,255,.08);border:2px solid var(--line)}
+.door.ready{background:var(--gold);color:#1a1a1a;border-color:var(--gold);animation:glow 1.6s infinite}
+@keyframes glow{50%{box-shadow:0 0 26px rgba(255,210,90,.6)}}
+/* overlays */
+.ov{position:fixed;inset:0;background:rgba(5,7,12,.82);display:none;align-items:center;justify-content:center;padding:20px;z-index:10}
+.ov.show{display:flex}
+.box{background:#fbf8f0;color:#1d2230;border-radius:24px;width:min(980px,100%);max-height:94vh;overflow:auto;padding:clamp(18px,2.4vw,34px);box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.qtop{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.tag{background:#e6f4f3;color:#17807b;border-radius:999px;padding:4px 12px;font-weight:800;font-size:clamp(12px,1vw,15px)}
+.tag.t2{background:#efeaff;color:#5b45b8}
+.qn{margin-left:auto;color:#8a8f9c;font-weight:700}
+.q{font-size:clamp(20px,2.1vw,32px);font-weight:800;line-height:1.3;margin:6px 0 18px}
+.ins{color:#6a7080;font-size:clamp(14px,1.2vw,18px);margin:-10px 0 14px}
+.opts{display:grid;gap:12px}
+.opt{display:flex;align-items:center;gap:14px;text-align:left;background:#fff;border:3px solid #dfd9ca;border-radius:16px;padding:14px 18px;font-size:clamp(17px,1.6vw,24px);font-weight:700}
+.opt b{width:40px;height:40px;flex-shrink:0;border-radius:50%;background:#eee8da;display:grid;place-items:center}
+.opt.sel{border-color:#2bb5b0;background:#eefaf9}
+.opt.good{border-color:#3aa655;background:#ebf8ee}
+.opt.bad{border-color:var(--red);background:#fdecea}
+.tfrow{display:flex;align-items:center;gap:12px;background:#fff;border:3px solid #dfd9ca;border-radius:16px;padding:10px 14px;font-size:clamp(16px,1.5vw,22px);font-weight:700}
+.tfrow span{flex:1}
+.tfb{min-width:96px;padding:10px 12px;border-radius:12px;border:3px solid #dfd9ca;background:#faf7ef;font-weight:800}
+.tfb.on.r{border-color:#3aa655;background:#ebf8ee}
+.tfb.on.f{border-color:var(--red);background:#fdecea}
+.tfrow.bad{border-color:var(--red)}
+.match{display:grid;grid-template-columns:1fr 1fr;gap:12px 28px}
+.mcol{display:grid;gap:12px;align-content:start}
+.mi{text-align:left;background:#fff;border:3px solid #dfd9ca;border-radius:16px;padding:14px 16px;font-size:clamp(16px,1.5vw,22px);font-weight:700;position:relative}
+.mi.sel{border-color:#2bb5b0;background:#eefaf9}
+.mi .pair{position:absolute;top:-10px;right:-10px;width:30px;height:30px;border-radius:50%;color:#fff;font-size:15px;display:grid;place-items:center;font-weight:900}
+.ord .opt b{background:#2bb5b0;color:#fff}
+.ord .opt.nonum b{background:#eee8da;color:transparent}
+textarea{width:100%;min-height:110px;border-radius:16px;border:3px solid #dfd9ca;padding:14px;font:inherit;font-size:clamp(17px,1.6vw,24px);resize:vertical;user-select:text;-webkit-user-select:text}
+.acts{display:flex;gap:12px;justify-content:flex-end;margin-top:18px;flex-wrap:wrap}
+.btn{padding:14px 26px;border-radius:16px;font-weight:900;font-size:clamp(16px,1.5vw,22px);background:#1d2230;color:#fff}
+.btn.sec{background:#e9e3d4;color:#1d2230}
+.btn.ok{background:#3aa655}
+.btn.warn{background:#c98a10}
+.fb{margin-top:16px;padding:14px 18px;border-radius:16px;font-size:clamp(16px,1.5vw,22px);font-weight:700;display:none;line-height:1.4}
+.fb.good{display:block;background:#ebf8ee;color:#256b37}
+.fb.bad{display:block;background:#fdecea;color:#9b2c22}
+.shake{animation:sh .35s}
+@keyframes sh{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.pad{display:grid;grid-template-columns:repeat(3,80px);gap:10px;justify-content:center;margin:14px 0}
+.pad button{height:70px;border-radius:14px;background:#e9e3d4;font-size:28px;font-weight:900;color:#1d2230}
+.dots{display:flex;gap:12px;justify-content:center;font-size:40px;font-weight:900;min-height:50px;letter-spacing:4px}
+.center{text-align:center}
+.big{font-size:clamp(26px,3vw,44px);font-weight:900}
+.digitshow{font-size:90px;font-weight:900;color:#c98a10;line-height:1}
+@media (max-width:900px){main{grid-template-columns:1fr}.stations{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <h1>👻 Escape: <span>Die Geisterreiter</span></h1>
+    <div class="sub">Geisterritter, Kapitel 2: Drei tote Männer</div>
+  </div>
+  <div class="pill" title="Fehler">❌ <span id="err">0</span></div>
+  <div class="pill" id="timer">⏱ 00:00</div>
+  <button class="icon" id="bKey" title="Lehrerin">🔑</button>
+</header>
+<main>
+  <section>
+    <div class="story">Es ist Nacht im Internat. Draußen warten drei bleiche Reiter. 😱 Jon, Angus und Stu müssen aus dem Zimmer fliehen! Die Tür ist mit einem <b>Zahlenschloss</b> verschlossen. Löst die Rätsel in den fünf Verstecken. Jedes Versteck gibt euch <b>eine Ziffer</b> für den Code.</div>
+    <div class="stations" id="stations"></div>
+  </section>
+  <aside>
+    <h2>🔐 Der Code</h2>
+    <div class="slots" id="slots"></div>
+    <div class="hint" id="clues">Findet die fünf Ziffern. Die Reihenfolge ist die Reihenfolge der Verstecke.</div>
+    <button class="door" id="bDoor">🚪 Tür öffnen</button>
+  </aside>
+</main>
+
+<div class="ov" id="ovQ"><div class="box" id="qBox"></div></div>
+<div class="ov" id="ovMsg"><div class="box center" id="msgBox"></div></div>
+<div class="ov" id="ovPad"><div class="box center" style="width:min(460px,100%)">
+  <div class="big" id="padTitle">Code</div>
+  <div class="dots" id="padDots"></div>
+  <div class="pad" id="pad"></div>
+  <div class="acts" style="justify-content:center"><button class="btn sec" id="padCancel">Abbrechen</button></div>
+</div></div>
+
+<script>
+const PIN = "2468";
+const STATIONS = [
+ {nm:"Das Dreibettzimmer", em:"🛏️", info:"Jon, Angus und Stu", digit:"3", why:"3, wie die drei Betten im Dreibettzimmer.", qs:[
+  {t:"match", tag:"Details finden", q:"Wer schläft wo? Verbinde.", ins:"Tippe links auf eine Person und dann rechts auf das passende Bett.",
+   L:["Angus","Stu","Jon"], R:["im Einzelbett","oben im Etagenbett","unten im Etagenbett"],
+   a:"Angus hat das Einzelbett. Stu schläft oben im Etagenbett und Jon unten."},
+  {t:"mc", tag:"Details finden", q:"Wie ist Stu?", o:["Er ist sehr groß und schüchtern.","Er ist klein und redet sehr viel.","Er ist müde und spricht nie."], c:1, a:"Stu ist klein und sehr gesprächig."},
+  {t:"multi", tag:"Details finden", q:"Über Angus' Bett hängen Fotos. Was ist auf den Fotos?", ins:"Tippe alle richtigen Antworten an. Es sind mehrere!",
+   o:["ein Hund","seine Familie","zwei Kanarienvögel","eine Katze","eine Schildkröte","sein Rugby-Team"], c:[0,2,4],
+   a:"Ein Hund, zwei Kanarienvögel und eine Schildkröte."},
+  {t:"tf", tag:"Details finden", q:"Richtig oder falsch?", items:[
+    ["Angus singt im Chor der Kathedrale.",true],
+    ["Stu ist größer als Angus.",false],
+    ["Stu malt sich falsche Tattoos auf die Haut.",true]],
+   a:"Angus singt im Chor. Stu ist klein. Er malt sich Tattoos mit Markern."},
+  {t:"open", tag:"Gründe erklären", q:"Warum ist Jon im Internat so unglücklich?", a:"Er hat Heimweh. Er möchte wieder nach Hause zu seiner Mutter."}
+ ]},
+ {nm:"Die sechste Nacht", em:"🌙", info:"Was hört Jon?", digit:"6", why:"6, weil die Reiter in der sechsten Nacht kommen.", qs:[
+  {t:"mc", tag:"Global verstehen", q:"Worum geht es in dem Text, den ihr gehört habt?", o:["Jon und seine Freunde feiern nachts eine Party.","Jon reitet nachts heimlich auf einem Pferd.","Jon sieht nachts drei Geisterreiter vor dem Fenster."], c:2, a:"Jon sieht in der Nacht drei bleiche Reiter vor dem Fenster."},
+  {t:"mc", tag:"Details finden", q:"In welcher Nacht passiert das?", o:["in der sechsten Nacht","in der ersten Nacht","in der dritten Nacht"], c:0, a:"Es ist Jons sechste Nacht im Internat."},
+  {t:"mc", tag:"Details finden", q:"Was macht Angus im Schlaf?", o:["Er spricht mit seinem Hund.","Er summt ein Lied für den Chor.","Er schnarcht sehr laut."], c:1, a:"Angus summt im Schlaf eine Hymne. Er übt für den Chor."},
+  {t:"mc", tag:"Details finden", q:"Was wünscht sich Jon?", o:["ein eigenes Zimmer","ein Pferd","Seine Mutter soll ihn nach Hause holen."], c:2, a:"Jon hofft, dass seine Mutter nachgibt und ihn nach Hause holt."},
+  {t:"open", tag:"Gründe erklären", q:"Jon will sich das Kissen über den Kopf ziehen. Warum?", a:"Er will das Summen von Angus nicht mehr hören."},
+  {t:"open", tag:"Details finden", q:"Was hört Jon plötzlich draußen?", a:"Er hört das Schnauben von Pferden."},
+  {t:"mc", tag:"Details finden", q:"Jon hört Pferde. Wer kommt da? Was denkt Jon zuerst?", o:["Edward Popplewell","Stu","sein Vater"], c:0, a:"Jon denkt, Edward Popplewell kommt vielleicht mit dem Pferd vom Pub nach Hause."},
+  {t:"mc", tag:"Details finden", q:"Wie ist das Wetter in dieser Nacht?", o:["Es schneit.","Es ist warm und hell.","Es ist nass vom Regen."], c:2, a:"Es ist eine regennasse Nacht."}
+ ]},
+ {nm:"Die Reiter", em:"🐎", info:"Wer wartet draußen?", digit:"3", why:"3, wie die drei Reiter vor dem Fenster.", qs:[
+  {t:"mc", tag:"Details finden", q:"Wie viele Reiter sieht Jon?", o:["zwei","drei","vier"], c:1, a:"Jon sieht drei Reiter."},
+  {t:"multi", tag:"Details finden", q:"Wie sehen die Reiter aus?", ins:"Tippe alle richtigen Antworten an. Es sind mehrere!", o:["bleich","bunt","durchsichtig","fröhlich","mit Schwertern","sehr klein"], c:[0,2,4],
+   a:"Die Reiter sind bleich und durchsichtig. Sie haben Schwerter."},
+  {t:"mc", tag:"Details finden", q:"Jon schaut den größten Reiter an. Was sieht er durch seinen Körper?", o:["den Mond","die Mauer","die Kathedrale"], c:1, a:"Durch seinen Körper sieht Jon die Ziegel der Mauer um den Garten."},
+  {t:"mc", tag:"Details finden", q:"Was ist das Schlimmste an den Reitern?", o:["ihre Augen","ihre Stimmen","ihre Hände"], c:0, a:"Am furchtbarsten sind ihre Augen: wie Brandlöcher."},
+  {t:"mc", tag:"Details finden", q:"Wie sehen die Pferde aus?", o:["schwarz, stark und schnell","weiß, schön und glänzend","bleich, mit grauem Fell und Knochen"], c:2, a:"Die Pferde sind so bleich wie die Reiter. Man sieht fast ihre Knochen."},
+  {t:"mc", tag:"Details finden", q:"Jon hat große Angst. Was kann er nicht tun?", o:["Er kann nicht mal die Arme heben.","Er kann nicht atmen.","Er kann nicht sprechen."], c:0, a:"Vor Angst kann Jon nicht mal die Arme heben."}
+ ]},
+ {nm:"Am Fenster", em:"🪟", info:"Was machen Stu und Angus?", digit:"2", why:"2, weil Stu und Angus die Reiter nicht sehen.", qs:[
+  {t:"match", tag:"Details finden", q:"Wer sagt was? Verbinde.", ins:"Tippe links auf einen Satz und dann rechts auf die Person.",
+   L:["„Was starrst du da draußen an?“","„Lass ihn in Ruhe!“","„Seid ihr blind?“"], R:["Stu","Angus","Jon"],
+   a:"Stu fragt, was Jon anstarrt. Angus sagt: Lass ihn in Ruhe! Jon ruft: Seid ihr blind?"},
+  {t:"open", tag:"Details finden", q:"Was macht der größte Geist?", a:"Er zeigt mit dem knochigen Finger auf Jon. Sein Mund formt eine Drohung."},
+  {t:"mc", tag:"Details finden", q:"Stu schaut aus dem Fenster. Was sieht er?", o:["einen Hund im Garten","nichts, nur ein paar Mülleimer","die drei Reiter"], c:1, a:"Stu sieht nichts, nur ein paar Mülleimer. Er kann die Geister nicht sehen."},
+  {t:"mc", tag:"Gründe erklären", q:"Was denkt Angus über Jon?", o:["Jon ist krank.","Jon macht einen Witz.","Jon schlafwandelt."], c:2, a:"Angus denkt, Jon schlafwandelt."},
+  {t:"open", tag:"Gründe erklären", q:"Stu schaut besorgt zur Tür. Warum?", a:"Jon ist sehr laut. Stu hat Angst, dass die Popplewells aufwachen."},
+  {t:"open", tag:"Details finden", q:"Was macht der Geist mit dem Hamstergesicht?", a:"Er grinst und zieht langsam sein Schwert. Blut tropft von der Klinge."},
+  {t:"mc", tag:"Details finden", q:"Blut tropft vom Schwert. Was fühlt Jon?", o:["Er fühlt einen scharfen Schmerz in der Brust.","Er hat plötzlich großen Hunger.","Ihm wird sehr warm."], c:0, a:"Jon fühlt einen scharfen Schmerz in der Brust und fällt auf die Knie."},
+  {t:"mc", tag:"Details finden", q:"Wo versteckt sich Jon?", o:["unter seinem Bett","hinter der Tür","unter dem Fensterbrett"], c:2, a:"Jon kauert zitternd unter dem Fensterbrett."}
+ ]},
+ {nm:"Das Ende der Nacht", em:"🕯️", info:"Wie geht die Nacht zu Ende?", digit:"1", why:"1, weil nur einer die Reiter sieht: Jon.", qs:[
+  {t:"tf", tag:"Details finden", q:"Richtig oder falsch?", items:[
+    ["Die Popplewells wachen auf und kommen ins Zimmer.",false],
+    ["Als Jon wieder hinausschaut, ist die Nacht leer.",true],
+    ["Danach ist der Schmerz in Jons Brust weg.",true]],
+   a:"Die Popplewells schlafen fest. Draußen ist niemand mehr und der Schmerz ist verschwunden."},
+  {t:"order", tag:"Reihenfolge", q:"Was passiert zuerst? Bringt die Sätze in die richtige Reihenfolge.", ins:"Tippe die Sätze nacheinander an: zuerst, dann, danach … zum Schluss.",
+   items:["Jon hört Pferde draußen.","Jon sieht drei bleiche Reiter.","Stu schaut aus dem Fenster und sieht nichts.","Ein Geist zieht sein Schwert und Jon fällt auf die Knie.","Jon schläft endlich ein."],
+   a:"Pferde hören, Reiter sehen, Stu sieht nichts, das Schwert, und am Ende schläft Jon ein."},
+  {t:"mc", tag:"Gründe erklären", q:"Was denkt Jon am Ende?", o:["Stu und Angus haben ihm einen Streich gespielt.","Er hatte Halluzinationen, weil er Heimweh hat und kaum etwas isst.","Die Reiter wohnen im Garten des Internats."], c:1,
+   a:"Jon denkt, er wird verrückt vor Heimweh, oder er hat Halluzinationen, weil er kaum etwas isst."},
+  {t:"mc", tag:"Details finden", q:"Was isst Jon in diesen Tagen fast nur?", o:["Schokolade","Weingummis","Äpfel"], c:1, a:"Jon isst fast nur die Weingummis von Stu und Angus."},
+  {t:"open", tag:"Details finden", q:"Jon geht später noch ein paarmal ans Fenster. Was sieht er?", a:"Er sieht nur die leere Straße vor der beleuchteten Kathedrale."},
+  {t:"open", tag:"Details finden", q:"Was nimmt sich Jon vor, bevor er einschläft?", a:"Er will von nun an das Essen im Internat essen."},
+  {t:"open", tag:"Zwischen den Zeilen", tag2:true, q:"Waren die Reiter echt? Was glaubst du? Begründe deine Meinung.", a:"Hier gibt es mehrere richtige Antworten, wenn sie gut begründet sind. Zum Beispiel: Ja, denn Jon hat sie genau gesehen und den Schmerz gespürt. Oder: Nein, denn Stu hat nichts gesehen."}
+ ]}
+];
+const TOTAL = STATIONS.reduce((n,s)=>n+s.qs.length,0);
+const CODE = STATIONS.map(s=>s.digit).join("");
+
+const fresh=()=>({cur:0, qi:STATIONS.map(()=>0), done:STATIONS.map(()=>false), err:0, start:null, end:null});
+let st = fresh();
+let qsel = null;
+const $ = id => document.getElementById(id);
+const esc = s => s.replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function fmt(ms){const s=Math.floor(ms/1000);return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0")}
+setInterval(()=>{ if(st.start) $("timer").textContent="⏱ "+fmt((st.end||Date.now())-st.start); },500);
+
+function render(){
+  $("err").textContent=st.err;
+  $("stations").innerHTML = STATIONS.map((s,i)=>{
+    const cls = st.done[i]?"done":(i===st.cur?"active":(i>st.cur?"locked":""));
+    const prog = s.qs.map((_,k)=>`<i class="${k<st.qi[i]?"ok":""}"></i>`).join("");
+    return `<button class="st ${cls}" data-i="${i}"><div class="em">${s.em}</div><div class="nm">${i+1}. ${s.nm}</div><div class="info">${s.info} · ${s.qs.length} Rätsel</div><div class="prog">${prog}</div></button>`;
+  }).join("");
+  $("slots").innerHTML = STATIONS.map((s,i)=>`<div class="slot ${st.done[i]?"f":""}">${st.done[i]?s.digit:"?"}</div>`).join("");
+  const found = STATIONS.filter((s,i)=>st.done[i]).map(s=>"• "+s.why).join("<br>");
+  $("clues").innerHTML = found || "Findet die fünf Ziffern. Die Reihenfolge ist die Reihenfolge der Verstecke.";
+  $("bDoor").classList.toggle("ready", st.done.every(x=>x));
+  document.querySelectorAll(".st").forEach(b=>b.onclick=()=>openStation(+b.dataset.i));
+}
+
+function openStation(i){
+  if(i>st.cur || st.done[i]) { if(i>st.cur){ msg(`<div class="big">🔒 Noch verschlossen</div><p style="font-size:20px">Löst zuerst das Versteck ${st.cur+1}.</p><div class="acts" style="justify-content:center"><button class="btn" onclick="closeMsg()">OK</button></div>`);} return; }
+  if(!st.start) st.start=Date.now();
+  showQ();
+}
+
+function showQ(){
+  const S=STATIONS[st.cur], q=S.qs[st.qi[st.cur]];
+  const num = STATIONS.slice(0,st.cur).reduce((n,s)=>n+s.qs.length,0)+st.qi[st.cur]+1;
+  qsel = {q};
+  let body="";
+  if(q.t==="mc"){
+    body=`<div class="opts">${q.o.map((o,k)=>`<button class="opt" data-k="${k}"><b>${"ABC"[k]}</b>${esc(o)}</button>`).join("")}</div>`;
+  } else if(q.t==="tf"){
+    qsel.v=q.items.map(()=>null);
+    body=`<div class="opts">${q.items.map((it,k)=>`<div class="tfrow" data-k="${k}"><span>${esc(it[0])}</span><button class="tfb r" data-v="1">✓ richtig</button><button class="tfb f" data-v="0">✗ falsch</button></div>`).join("")}</div>`;
+  } else if(q.t==="multi"){
+    qsel.s=new Set();
+    body=`<div class="opts" style="grid-template-columns:1fr 1fr">${q.o.map((o,k)=>`<button class="opt" data-k="${k}"><b>○</b>${esc(o)}</button>`).join("")}</div>`;
+  } else if(q.t==="match"){
+    qsel.ro=shuffle(q.R.map((_,k)=>k)); qsel.p={}; qsel.l=null;
+    body=`<div class="match"><div class="mcol" id="mL">${q.L.map((l,k)=>`<button class="mi" data-l="${k}">${esc(l)}</button>`).join("")}</div><div class="mcol" id="mR">${qsel.ro.map(k=>`<button class="mi" data-r="${k}">${esc(q.R[k])}</button>`).join("")}</div></div>`;
+  } else if(q.t==="order"){
+    qsel.so=shuffle(q.items.map((_,k)=>k)); qsel.pick=[];
+    body=`<div class="opts ord">${qsel.so.map(k=>`<button class="opt nonum" data-k="${k}"><b></b>${esc(q.items[k])}</button>`).join("")}</div>`;
+  } else if(q.t==="open"){
+    body=`<textarea id="ta" placeholder="Schreibt einen ganzen Satz …"></textarea>`;
+  }
+  const needCheck = ["tf","multi","match","order"].includes(q.t);
+  $("qBox").innerHTML = `
+    <div class="qtop"><span class="tag ${q.tag2?"t2":""}">${q.tag}</span><span class="tag" style="background:#f1ece0;color:#6a5a3a">${S.em} ${S.nm}</span><span class="qn">Frage ${num} / ${TOTAL}</span></div>
+    <div class="q">${esc(q.q)}</div>${q.ins?`<div class="ins">${esc(q.ins)}</div>`:""}
+    <div id="qBody">${body}</div>
+    <div class="fb" id="fb"></div>
+    <div class="acts" id="qActs">
+      <button class="btn sec" onclick="closeQ()">Zurück</button>
+      ${q.t==="order"?`<button class="btn sec" id="bReset">↺ Neu</button>`:""}
+      ${needCheck?`<button class="btn" id="bCheck">Prüfen</button>`:""}
+      ${q.t==="open"?`<button class="btn" id="bDone">Fertig ✋</button>`:""}
+    </div>`;
+  $("ovQ").classList.add("show");
+  wire(q);
+}
+
+function wire(q){
+  const B=$("qBody");
+  if(q.t==="mc"){
+    B.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{
+      const k=+b.dataset.k;
+      if(k===q.c){ b.classList.add("good"); right(); }
+      else { b.classList.add("bad"); wrong(); }
+    });
+  }
+  if(q.t==="tf"){
+    B.querySelectorAll(".tfrow").forEach(r=>{
+      const k=+r.dataset.k;
+      r.querySelectorAll(".tfb").forEach(b=>b.onclick=()=>{
+        qsel.v[k]=b.dataset.v==="1"; r.classList.remove("bad");
+        r.querySelectorAll(".tfb").forEach(x=>x.classList.toggle("on",x===b));
+      });
+    });
+    $("bCheck").onclick=()=>{
+      if(qsel.v.includes(null)){ hint("Entscheidet bei jedem Satz: richtig oder falsch?"); return; }
+      let ok=true;
+      B.querySelectorAll(".tfrow").forEach(r=>{const k=+r.dataset.k; if(qsel.v[k]!==q.items[k][1]){ok=false;r.classList.add("bad")}});
+      ok?right():wrong("Mindestens ein Satz ist noch falsch. Die roten Sätze nochmal prüfen!");
+    };
+  }
+  if(q.t==="multi"){
+    B.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{
+      const k=+b.dataset.k; b.classList.remove("bad");
+      qsel.s.has(k)?qsel.s.delete(k):qsel.s.add(k);
+      b.classList.toggle("sel",qsel.s.has(k)); b.querySelector("b").textContent=qsel.s.has(k)?"✓":"○";
+    });
+    $("bCheck").onclick=()=>{
+      if(!qsel.s.size){ hint("Tippt zuerst eure Antworten an."); return; }
+      const good=new Set(q.c); let ok=good.size===qsel.s.size;
+      B.querySelectorAll(".opt").forEach(b=>{const k=+b.dataset.k; if(qsel.s.has(k)&&!good.has(k)){ok=false;b.classList.add("bad")}});
+      if(ok) right(); else wrong(qsel.s.size<good.size&&[...qsel.s].every(k=>good.has(k))?"Das stimmt, aber es fehlen noch Antworten!":"Nicht alles stimmt. Die roten Antworten sind falsch.");
+    };
+  }
+  if(q.t==="match"){
+    const COL=["#2bb5b0","#c98a10","#7a5cd6"];
+    const draw=()=>{
+      B.querySelectorAll(".mi").forEach(b=>{b.classList.remove("sel");const o=b.querySelector(".pair");if(o)o.remove()});
+      Object.entries(qsel.p).forEach(([l,r],n)=>{
+        [B.querySelector(`[data-l="${l}"]`),B.querySelector(`[data-r="${r}"]`)].forEach(el=>{const s=document.createElement("span");s.className="pair";s.style.background=COL[l];s.textContent=+l+1;el.appendChild(s);el.style.borderColor=COL[l]});
+      });
+      B.querySelectorAll(".mi").forEach(b=>{const l=b.dataset.l,r=b.dataset.r;const used=l!==undefined?l in qsel.p:Object.values(qsel.p).includes(+r);if(!used)b.style.borderColor=""});
+      if(qsel.l!==null) B.querySelector(`[data-l="${qsel.l}"]`).classList.add("sel");
+    };
+    B.querySelectorAll("[data-l]").forEach(b=>b.onclick=()=>{const l=+b.dataset.l; delete qsel.p[l]; qsel.l=l; draw();});
+    B.querySelectorAll("[data-r]").forEach(b=>b.onclick=()=>{
+      if(qsel.l===null){ hint("Tippt zuerst links auf eine Person."); return; }
+      const r=+b.dataset.r; for(const k in qsel.p) if(qsel.p[k]===r) delete qsel.p[k];
+      qsel.p[qsel.l]=r; qsel.l=null; draw();
+    });
+    $("bCheck").onclick=()=>{
+      if(Object.keys(qsel.p).length<q.L.length){ hint("Verbindet zuerst alle Personen."); return; }
+      const ok=q.L.every((_,k)=>qsel.p[k]===k);
+      if(ok) right(); else { qsel.p={}; draw(); wrong("Das stimmt noch nicht. Versucht es nochmal!"); }
+    };
+  }
+  if(q.t==="order"){
+    const draw=()=>B.querySelectorAll(".opt").forEach(b=>{const k=+b.dataset.k,i=qsel.pick.indexOf(k);b.classList.toggle("nonum",i<0);b.classList.remove("bad");b.querySelector("b").textContent=i<0?"":i+1;});
+    B.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{const k=+b.dataset.k; if(!qsel.pick.includes(k)){qsel.pick.push(k);draw();}});
+    $("bReset").onclick=()=>{qsel.pick=[];draw();};
+    $("bCheck").onclick=()=>{
+      if(qsel.pick.length<q.items.length){ hint("Tippt alle Sätze der Reihe nach an."); return; }
+      const ok=qsel.pick.every((k,i)=>k===i);
+      if(ok) right(); else { qsel.pick=[]; draw(); wrong("Die Reihenfolge stimmt noch nicht. Versucht es nochmal!"); }
+    };
+  }
+  if(q.t==="open"){
+    $("bDone").onclick=()=>{
+      if(!$("ta").value.trim()){ hint("Schreibt zuerst eine Antwort."); return; }
+      askPin(()=>teacherJudge());
+    };
+  }
+}
+
+function teacherJudge(){
+  const q=qsel.q;
+  $("qActs").innerHTML=`<button class="btn sec" id="tSol">Lösung zeigen</button><button class="btn warn" id="tNo">✗ Nochmal versuchen</button><button class="btn ok" id="tYes">✓ Richtig</button>`;
+  $("tYes").onclick=()=>right();
+  $("tNo").onclick=()=>{ st.err++; render(); restoreOpenActs(); fbShow("bad","Fast! Überlegt nochmal und verbessert eure Antwort."); };
+  $("tSol").onclick=()=>{ fbShow("good","💡 Lösung: "+q.a); $("qActs").innerHTML=`<button class="btn" id="bNext">Weiter ➜</button>`; $("bNext").onclick=next; };
+}
+function restoreOpenActs(){
+  $("qActs").innerHTML=`<button class="btn sec" onclick="closeQ()">Zurück</button><button class="btn" id="bDone">Fertig ✋</button>`;
+  $("bDone").onclick=()=>{ if(!$("ta").value.trim()) return; askPin(()=>teacherJudge()); };
+}
+function fbShow(cls,txt){const f=$("fb");f.className="fb "+cls;f.textContent=txt;}
+function hint(t){fbShow("bad",t);}
+function right(){
+  fbShow("good","✓ Richtig! "+qsel.q.a);
+  $("qBody").querySelectorAll("button,textarea").forEach(b=>b.disabled=true);
+  $("qActs").innerHTML=`<button class="btn ok" id="bNext">Weiter ➜</button>`;
+  $("bNext").onclick=next;
+}
+function wrong(t){
+  st.err++; render();
+  fbShow("bad",t||"Leider falsch. Versucht es nochmal!");
+  const b=$("qBox"); b.classList.remove("shake"); void b.offsetWidth; b.classList.add("shake");
+}
+function next(){
+  const i=st.cur; st.qi[i]++;
+  if(st.qi[i]>=STATIONS[i].qs.length){
+    st.done[i]=true; if(i<STATIONS.length-1) st.cur=i+1;
+    closeQ(); render();
+    msg(`<div class="big">${STATIONS[i].em} Versteck geknackt!</div><p style="font-size:20px">Ihr habt eine Ziffer gefunden:</p><div class="digitshow">${STATIONS[i].digit}</div><p style="font-size:18px;color:#6a7080">${STATIONS[i].why}</p><div class="acts" style="justify-content:center"><button class="btn" onclick="closeMsg()">Super!</button></div>`);
+    return;
+  }
+  render(); showQ();
+}
+function closeQ(){$("ovQ").classList.remove("show");}
+function msg(h){$("msgBox").innerHTML=h;$("ovMsg").classList.add("show");}
+function closeMsg(){$("ovMsg").classList.remove("show");}
+
+/* keypad */
+let padVal=[], padLen=4, padThen=null, padMask=true;
+function openPad(title,mask,then,len){padLen=len||4;padVal=[];padMask=mask;padThen=then;$("padTitle").textContent=title;drawPad();$("ovPad").classList.add("show");}
+function drawPad(){$("padDots").textContent=Array.from({length:padLen},(_,i)=>i<padVal.length?(padMask?"●":padVal[i]):"_").join(" ");}
+$("pad").innerHTML=[1,2,3,4,5,6,7,8,9,"⌫",0,"✓"].map(k=>`<button data-k="${k}">${k}</button>`).join("");
+$("pad").querySelectorAll("button").forEach(b=>b.onclick=()=>{
+  const k=b.dataset.k;
+  if(k==="⌫"){padVal.pop();drawPad();return;}
+  if(k==="✓"){ if(padVal.length===padLen){const v=padVal.join("");$("ovPad").classList.remove("show");padThen&&padThen(v);} return;}
+  if(padVal.length<padLen){padVal.push(k);drawPad();}
+});
+$("padCancel").onclick=()=>$("ovPad").classList.remove("show");
+function askPin(then){openPad("🔑 Code der Lehrerin",true,v=>{ if(v===PIN) then(); else alert2(); });}
+function alert2(){ if($("ovQ").classList.contains("show")) hint("Falscher Lehrer-Code."); else msg(`<div class="big">❌ Falscher Lehrer-Code</div><div class="acts" style="justify-content:center"><button class="btn" onclick="closeMsg()">OK</button></div>`); }
+
+$("bDoor").onclick=()=>{
+  if(!st.done.every(x=>x)){ msg(`<div class="big">🚪 Die Tür ist verschlossen</div><p style="font-size:20px">Ihr braucht zuerst alle fünf Ziffern.</p><div class="acts" style="justify-content:center"><button class="btn" onclick="closeMsg()">OK</button></div>`); return; }
+  openPad("🔐 Code eingeben",false,v=>{
+    if(v===CODE){
+      st.end=Date.now();
+      msg(`<div style="font-size:70px">🎉🚪</div><div class="big">Geschafft! Die Tür ist offen!</div><p style="font-size:22px">Jon, Angus und Stu sind in Sicherheit.<br>Zeit: <b>${fmt(st.end-st.start)}</b> · Fehler: <b>${st.err}</b></p><p style="font-size:20px;color:#6a7080">Aber kommen die Reiter in der nächsten Nacht zurück? 👻<br>Schreibt jetzt eure Fortsetzung!</p><div class="acts" style="justify-content:center"><button class="btn" onclick="closeMsg()">Schließen</button></div>`);
+    } else { st.err++; render(); msg(`<div class="big">❌ Falscher Code</div><p style="font-size:20px">Schaut euch die Ziffern nochmal genau an.</p><div class="acts" style="justify-content:center"><button class="btn" onclick="closeMsg()">OK</button></div>`); }
+  }, CODE.length);
+};
+$("bKey").onclick=()=>askPin(()=>msg(`<div class="big">🔑 Lehrerin</div><div class="acts" style="justify-content:center;flex-direction:column;align-items:stretch">
+  <button class="btn sec" onclick="skipQ()">Diese Frage überspringen</button>
+  <button class="btn warn" onclick="restart()">Spiel neu starten</button>
+  <button class="btn" onclick="closeMsg()">Schließen</button></div>`));
+function restart(){st=fresh();$("timer").textContent="⏱ 00:00";closeMsg();closeQ();render();}
+function skipQ(){closeMsg(); if(st.done.every(x=>x)) return; if(!st.start) st.start=Date.now(); qsel={q:STATIONS[st.cur].qs[st.qi[st.cur]]}; next(); }
+render();
+</script>
+</body>
+</html>
