@@ -1,0 +1,523 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>[hidden]{display:none!important}html,body{margin:0}</style>
+<title>Flucht aus dem Keller</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Fredoka:wght@500;600;700&display=swap">
+<style>
+/* Layout: one task card at a time under a fixed row of 7 letter locks; dark cellar, torch-light buttons, eye-green for letters only */
+:root {
+  --bg: #120f18;
+  --panel: #1e1a27;
+  --panel-2: #29243a;
+  --line: #3a3350;
+  --fg: #f4ecd8;
+  --muted: #b9b0c9;
+  --torch: #f3c96a;
+  --torch-ink: #2a1d05;
+  --eye: #d8f24a;
+  --right: #8fe08a;
+  --right-bg: #1f3a24;
+  --wrong: #ff9a8a;
+  --wrong-bg: #45201f;
+  --font-text: "Andika", "Comic Sans MS", system-ui, sans-serif;
+  --font-head: "Fredoka", "Andika", system-ui, sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { background: var(--bg); }
+body {
+  color: var(--fg);
+  font-family: var(--font-text);
+  font-size: 22px;
+  line-height: 1.45;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 16px 40px;
+  min-height: 100%;
+  overflow-x: hidden;
+}
+.wrap { max-width: 860px; margin: 0 auto; position: relative; z-index: 1; display: grid; gap: 18px; }
+h1, h2, h3 { font-family: var(--font-head); text-wrap: balance; margin: 0; font-weight: 600; }
+h1 { font-size: clamp(34px, 6vw, 52px); line-height: 1.1; }
+h2 { font-size: clamp(26px, 4.5vw, 34px); line-height: 1.15; }
+p { margin: 0; }
+button { font: inherit; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+button:focus-visible, input:focus-visible { outline: 3px solid var(--eye); outline-offset: 3px; }
+
+/* ambient eyes */
+.eyes-bg { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+.pair { position: absolute; display: flex; gap: 14px; opacity: .55; animation: blink 6s infinite; }
+.pair i { width: 22px; height: 12px; border-radius: 50%; background: radial-gradient(circle at 50% 50%, #111 0 18%, var(--eye) 22% 100%); box-shadow: 0 0 18px 4px rgba(216,242,74,.35); display: block; }
+.pair.p2 { animation-delay: 2.2s; animation-duration: 7.5s; transform: scale(.7); }
+.pair.p3 { animation-delay: 4.1s; animation-duration: 9s; transform: scale(.55); }
+@keyframes blink { 0%, 92%, 100% { transform-origin: center; filter: none; } 94%, 96% { filter: brightness(.2); } }
+
+/* letter locks */
+.locks { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; }
+.lock {
+  aspect-ratio: 3 / 4; max-width: 100%; border-radius: 12px; border: 2px dashed var(--line);
+  display: grid; place-items: center; font-family: var(--font-head); font-size: clamp(26px, 6vw, 44px); font-weight: 700; color: var(--muted);
+  background: var(--panel);
+}
+.lock.got { border: 2px solid var(--eye); color: var(--eye); text-shadow: 0 0 14px rgba(216,242,74,.6); background: #23271a; }
+.lock.now { border-color: var(--torch); border-style: solid; }
+.lock span { font-size: .55em; opacity: .7; }
+
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 22px; padding: clamp(18px, 4vw, 30px); display: grid; gap: 20px; }
+.eyebrow { font-family: var(--font-head); font-size: 18px; letter-spacing: .06em; text-transform: uppercase; color: var(--torch); }
+.task-text { font-size: 24px; }
+.tip { font-size: 18px; color: var(--muted); }
+
+.btn {
+  min-height: 60px; padding: 10px 26px; border-radius: 16px; border: 0;
+  background: var(--torch); color: var(--torch-ink); font-family: var(--font-head); font-weight: 600; font-size: 24px;
+  box-shadow: 0 4px 0 #a9822d;
+}
+.btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #a9822d; }
+.btn.ghost { background: transparent; color: var(--muted); box-shadow: none; border: 2px solid var(--line); font-size: 18px; min-height: 48px; padding: 6px 16px; }
+.row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.row.end { justify-content: flex-end; }
+
+/* answer controls */
+.q { display: grid; gap: 10px; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
+.q:last-child { border-bottom: 0; padding-bottom: 0; }
+.q-text { font-size: 24px; }
+.opt, .chip, .sent, .syl, .tile {
+  min-height: 58px; padding: 8px 18px; border-radius: 14px; border: 2px solid var(--line);
+  background: var(--panel-2); font-size: 24px; text-align: left;
+}
+.opt.sel, .chip.sel, .sent.sel { border-color: var(--torch); background: #3a3020; }
+.right { border-color: var(--right) !important; background: var(--right-bg) !important; }
+.wrong { border-color: var(--wrong) !important; background: var(--wrong-bg) !important; }
+.chips { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+.chip { text-align: center; font-size: 28px; }
+.sents { display: grid; gap: 12px; }
+.sent { display: flex; gap: 14px; align-items: center; }
+.num { flex: none; width: 44px; height: 44px; border-radius: 50%; border: 2px dashed var(--line); display: grid; place-items: center; font-family: var(--font-head); font-weight: 700; color: var(--torch); }
+.sent.sel .num { border: 2px solid var(--torch); background: var(--torch); color: var(--torch-ink); }
+
+.pool { display: flex; flex-wrap: wrap; gap: 10px; min-height: 64px; padding: 10px; border-radius: 14px; background: #15121c; }
+.syl, .tile { font-family: var(--font-head); font-weight: 600; font-size: 28px; text-align: center; min-width: 70px; }
+.slots { display: grid; gap: 10px; }
+.slot { display: flex; flex-wrap: wrap; align-items: center; gap: 0; min-height: 66px; border-radius: 14px; border: 2px dashed var(--line); padding: 6px 10px; background: transparent; text-align: left; width: 100%; }
+.slot.active { border-color: var(--torch); border-style: solid; }
+.slot .label { font-size: 16px; color: var(--muted); margin-right: 12px; }
+.slot .syl { min-height: 50px; border-radius: 10px; margin-right: 4px; }
+
+.msg { font-size: 22px; padding: 12px 16px; border-radius: 14px; }
+.msg.bad { background: var(--wrong-bg); color: var(--wrong); }
+.msg.good { background: var(--right-bg); color: var(--right); }
+
+/* start + final */
+.hero { display: grid; gap: 18px; justify-items: start; }
+.door { width: 100%; max-width: 360px; justify-self: center; }
+.names { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; width: 100%; }
+.names label { display: grid; gap: 6px; font-size: 18px; color: var(--muted); }
+.names input { font: inherit; font-size: 24px; color: var(--fg); background: var(--panel-2); border: 2px solid var(--line); border-radius: 12px; padding: 10px 14px; min-height: 56px; width: 100%; min-width: 0; }
+.steps { display: grid; gap: 8px; padding-left: 1.2em; margin: 0; }
+
+/* letter reveal overlay */
+.overlay { position: fixed; inset: 0; z-index: 5; background: rgba(5,4,8,.92); display: grid; place-items: center; padding: 24px max(16px, env(safe-area-inset-right, 0px)) 24px max(16px, env(safe-area-inset-left, 0px)); }
+.reveal { display: grid; gap: 18px; justify-items: center; text-align: center; }
+.big-letter { font-family: var(--font-head); font-weight: 700; font-size: clamp(120px, 30vw, 200px); line-height: 1; color: var(--eye); text-shadow: 0 0 40px rgba(216,242,74,.7); animation: glow 1.2s ease-out; }
+@keyframes glow { from { transform: scale(.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.qr { width: min(70vmin, 520px); max-width: 100%; image-rendering: pixelated; background: #fff; padding: 16px; border-radius: 16px; }
+.confirm { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; font-size: 18px; color: var(--muted); }
+
+@media (max-width: 520px) {
+  body { font-size: 20px; }
+  .q-text, .task-text, .opt, .sent { font-size: 21px; }
+  .locks { gap: 5px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pair, .big-letter, .door-leaf { animation: none !important; transition: none !important; }
+}
+.door-leaf { transform-origin: 0% 50%; transition: transform 1.6s ease-in-out; transform-box: fill-box; }
+.door.open .door-leaf { transform: scaleX(.12); }
+</style>
+</head><body>
+
+<div class="eyes-bg" aria-hidden="true">
+  <div class="pair" style="left:6%; top:72%"><i></i><i></i></div>
+  <div class="pair p2" style="right:8%; top:18%"><i></i><i></i></div>
+  <div class="pair p3" style="left:44%; top:92%"><i></i><i></i></div>
+</div>
+
+<main class="wrap" id="app"></main>
+
+<script>
+const TASKS = [
+  {
+    letter: 'S', title: 'Wer nimmt was?',
+    text: 'Lest den Anfang der Geschichte. Tippt die richtige Antwort an.',
+    type: 'mc',
+    items: [
+      { q: 'Wohin soll alles?', options: ['in den Keller', 'in die Küche', 'ins Auto'], a: 0 },
+      { q: 'Was nimmt Laura?', options: ['die Kartoffeln', 'die Kiste', 'die Katze'], a: 1 },
+      { q: 'Was nimmt Pit?', options: ['die Kiste', 'die Limo', 'die Kartoffeln'], a: 2 }
+    ]
+  },
+  {
+    letter: 'T', title: 'Stimmt das?',
+    text: 'Lest jeden Satz. Stimmt er oder stimmt er nicht?',
+    type: 'mc', fixed: true,
+    items: [
+      { q: 'Laura nimmt die Kartoffeln.', options: ['stimmt', 'stimmt nicht'], a: 1 },
+      { q: 'Im Keller ist es finster.', options: ['stimmt', 'stimmt nicht'], a: 0 },
+      { q: 'Es knistert in einer alten Kiste.', options: ['stimmt', 'stimmt nicht'], a: 0 },
+      { q: 'Am Fenster ist nichts.', options: ['stimmt', 'stimmt nicht'], a: 1 },
+      { q: 'Im Keller ist ein Fußball.', options: ['stimmt', 'stimmt nicht'], a: 1 }
+    ]
+  },
+  {
+    letter: 'E', title: 'Au weia!',
+    text: 'Tippt alle Wörter mit au an.',
+    type: 'pick',
+    words: ['Maus', 'Kiste', 'Auto', 'Ratte', 'Laura', 'Wand', 'Haus', 'Keller'],
+    correct: ['Maus', 'Auto', 'Laura', 'Haus']
+  },
+  {
+    letter: 'R', title: 'Was passiert zuerst?',
+    text: 'Tippt die Sätze in der richtigen Reihenfolge an: zuerst 1, dann 2, dann 3, dann 4.',
+    type: 'order',
+    sentences: [
+      'Laura nimmt die Kiste aus dem Auto.',
+      'Pit geht in den finsteren Keller.',
+      'Da rennt etwas auf der alten Kiste.',
+      'Pit ruft: Mama! Mama!'
+    ]
+  },
+  {
+    letter: 'M', title: 'Welches Wort fehlt?',
+    text: 'Tippt das Wort an, das in die Lücke passt.',
+    type: 'mc',
+    items: [
+      { q: 'Da knistert es in einer alten ___.', options: ['Kiste', 'Kanne', 'Kasse'], a: 0 },
+      { q: 'Da ist etwas am ___.', options: ['Feuer', 'Fenster', 'Fußball'], a: 1 },
+      { q: 'Iii, dort an der ___.', options: ['Wolke', 'Wanne', 'Wand'], a: 2 },
+      { q: 'Ist es eine Maus? Oder etwa eine ___?', options: ['Ratte', 'Rakete', 'Rose'], a: 0 }
+    ]
+  },
+  {
+    letter: 'O', title: 'Richtig geschrieben',
+    text: 'Nur ein Wort ist richtig geschrieben. Tippt es an.',
+    type: 'mc',
+    items: [
+      { q: 'Wo ist es finster?', options: ['Keler', 'Keller', 'Kelller'], a: 1 },
+      { q: 'Was fällt Pit herunter?', options: ['Kartofeln', 'Kardoffeln', 'Kartoffeln'], a: 2 },
+      { q: 'Ist es eine Maus oder eine …', options: ['Ratte', 'Rate', 'Radde'], a: 0 },
+      { q: 'Da … etwas auf der Kiste.', options: ['rent', 'rennt', 'rännt'], a: 1 }
+    ]
+  },
+  {
+    letter: 'N', title: 'Silben-Rätsel',
+    text: 'Baut aus den Silben vier Wörter aus der Geschichte. Tippt zuerst auf ein Wort-Feld, dann auf die Silben.',
+    type: 'syll',
+    words: [['Kel', 'ler'], ['Fens', 'ter'], ['Kar', 'tof', 'feln'], ['Kis', 'te']]
+  }
+];
+const WORD = 'MONSTER';
+const QR = '';
+const KEY = 'keller-escape-v1';
+
+let state = load();
+function fresh() { return { names: ['', ''], solved: TASKS.map(() => false), screen: 'start', done: false }; }
+function load() {
+  try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.solved && s.solved.length === TASKS.length) return s; } catch (e) {}
+  return fresh();
+}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+
+const app = document.getElementById('app');
+const h = (tag, attrs = {}, ...kids) => {
+  const el = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') el.className = v;
+    else if (k.startsWith('on')) el.addEventListener(k.slice(2), v);
+    else if (v !== false && v != null) el.setAttribute(k, v);
+  }
+  for (const c of kids.flat()) if (c != null) el.append(c.nodeType ? c : document.createTextNode(c));
+  return el;
+};
+const shuffle = (arr) => { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const nextOpen = () => state.solved.findIndex(s => !s);
+
+function locks(current) {
+  return h('div', { class: 'locks', 'aria-label': 'Gefundene Buchstaben' },
+    TASKS.map((t, i) => h('div', { class: 'lock' + (state.solved[i] ? ' got' : '') + (i === current ? ' now' : '') },
+      state.solved[i] ? t.letter : h('span', {}, String(i + 1)))));
+}
+
+function doorSVG(open) {
+  return `<svg class="door${open ? ' open' : ''}" viewBox="0 0 240 300" role="img" aria-label="Kellertür">
+    <rect x="10" y="10" width="220" height="290" rx="8" fill="#0a090d" stroke="#3a3350" stroke-width="6"/>
+    <g class="eyes-in"><ellipse cx="95" cy="170" rx="16" ry="9" fill="#d8f24a"/><ellipse cx="145" cy="170" rx="16" ry="9" fill="#d8f24a"/>
+    <ellipse cx="95" cy="170" rx="3" ry="8" fill="#0a090d"/><ellipse cx="145" cy="170" rx="3" ry="8" fill="#0a090d"/></g>
+    <g class="door-leaf"><rect x="20" y="20" width="200" height="275" rx="4" fill="#6b4a2a" stroke="#3e2914" stroke-width="5"/>
+    <rect x="45" y="45" width="150" height="95" rx="6" fill="none" stroke="#3e2914" stroke-width="5"/>
+    <rect x="45" y="160" width="150" height="110" rx="6" fill="none" stroke="#3e2914" stroke-width="5"/>
+    <circle cx="190" cy="160" r="9" fill="#f3c96a"/><rect x="186" y="170" width="8" height="18" rx="3" fill="#2a1d05"/></g>
+  </svg>`;
+}
+
+function render() {
+  app.innerHTML = '';
+  if (state.screen === 'start') return renderStart();
+  if (state.screen === 'final') return renderFinal();
+  renderTask(state.screen);
+}
+
+function resetControl() {
+  const box = h('div', { class: 'confirm' });
+  const ask = h('button', { class: 'btn ghost', type: 'button', onclick: () => {
+    box.innerHTML = '';
+    box.append('Alles löschen und neu anfangen?',
+      h('button', { class: 'btn ghost', type: 'button', onclick: () => { state = fresh(); save(); render(); } }, 'Ja, neu starten'),
+      h('button', { class: 'btn ghost', type: 'button', onclick: () => { box.innerHTML = ''; box.append(ask); } }, 'Nein'));
+  } }, 'Für das nächste Team: neu starten');
+  box.append(ask);
+  return box;
+}
+
+function renderStart() {
+  const started = state.solved.some(Boolean);
+  const n1 = h('input', { id: 'name1', value: state.names[0], placeholder: 'Name', autocomplete: 'off' });
+  const n2 = h('input', { id: 'name2', value: state.names[1], placeholder: 'Name', autocomplete: 'off' });
+  const door = h('div', { class: 'door-wrap' }); door.innerHTML = doorSVG(false);
+  app.append(
+    locks(-1),
+    h('section', { class: 'card hero' },
+      h('p', { class: 'eyebrow' }, 'Escape-Room · Fibel S. 86/87'),
+      h('h1', {}, 'Flucht aus dem Keller'),
+      door,
+      h('p', { class: 'task-text' }, 'Ihr seid mit Pit im finsteren Keller. Die Tür ist zu! Löst 7 Rätsel. Für jedes richtige Rätsel bekommt ihr einen Buchstaben. Mit allen Buchstaben öffnet ihr die Tür.'),
+      h('ol', { class: 'steps tip' }, h('li', {}, 'Lest die Aufgabe zusammen.'), h('li', {}, 'Schaut im Buch nach.'), h('li', {}, 'Tippt auf „Prüfen“.')),
+      h('div', { class: 'names' },
+        h('label', { for: 'name1' }, 'Kind 1', n1),
+        h('label', { for: 'name2' }, 'Kind 2', n2)),
+      h('div', { class: 'row' },
+        h('button', { class: 'btn', type: 'button', onclick: () => {
+          state.names = [n1.value.trim(), n2.value.trim()];
+          const i = nextOpen(); state.screen = i === -1 ? 'final' : i; save(); render();
+        } }, started ? 'Weiterspielen' : 'Los geht’s!')),
+      started ? resetControl() : null
+    )
+  );
+}
+
+function showQR() {
+  const ov = h('div', { class: 'overlay', role: 'dialog', 'aria-label': 'QR-Code' },
+    h('div', { class: 'reveal' },
+      h('h2', {}, 'Flucht aus dem Keller'),
+      h('img', { src: QR, alt: 'QR-Code zum Escape-Room', class: 'qr' }),
+      h('p', { class: 'task-text' }, 'Kamera auf den Code halten!'),
+      h('button', { class: 'btn', type: 'button', onclick: () => ov.remove() }, 'Schließen')));
+  document.body.append(ov);
+  ov.querySelector('button').focus();
+}
+
+function renderTask(i) {
+  const t = TASKS[i];
+  const msg = h('p', { class: 'msg', hidden: true, role: 'status' });
+  const ctl = builders[t.type](t);
+  app.append(
+    locks(i),
+    h('section', { class: 'card' },
+      h('p', { class: 'eyebrow' }, `Rätsel ${i + 1} von ${TASKS.length}`),
+      h('h2', {}, t.title),
+      h('p', { class: 'task-text' }, t.text),
+      ctl.el,
+      msg,
+      h('div', { class: 'row' },
+        h('button', { class: 'btn', type: 'button', onclick: () => {
+          const res = ctl.check();
+          if (res === true) { state.solved[i] = true; save(); showLetter(i); }
+          else { msg.hidden = false; msg.className = 'msg bad'; msg.textContent = res || 'Noch nicht ganz. Die roten Antworten stimmen noch nicht. Lest noch einmal im Buch nach.'; }
+        } }, 'Prüfen')),
+      h('p', { class: 'tip' }, 'Tipp: Die Geschichte steht im Buch auf Seite 86 und 87.')
+    ),
+    h('div', { class: 'row' }, h('button', { class: 'btn ghost', type: 'button', onclick: () => { state.screen = 'start'; save(); render(); } }, 'Zurück zum Start'))
+  );
+}
+
+function showLetter(i) {
+  const t = TASKS[i];
+  const next = nextOpen();
+  const ov = h('div', { class: 'overlay', role: 'dialog', 'aria-label': 'Buchstabe gefunden' },
+    h('div', { class: 'reveal' },
+      h('h2', {}, 'Richtig!'),
+      h('p', { class: 'task-text' }, 'Ihr habt einen Buchstaben gefunden:'),
+      h('div', { class: 'big-letter' }, t.letter),
+      h('button', { class: 'btn', type: 'button', onclick: () => {
+        ov.remove(); state.screen = next === -1 ? 'final' : next; save(); render();
+      } }, next === -1 ? 'Zur Kellertür' : 'Nächstes Rätsel')));
+  document.body.append(ov);
+  ov.querySelector('button').focus();
+}
+
+const builders = {
+  mc(t) {
+    const picks = t.items.map(() => null);
+    const groups = t.items.map((it, qi) => {
+      const order = t.fixed ? it.options.map((_, k) => k) : shuffle(it.options.map((_, k) => k));
+      const btns = order.map(k => h('button', { class: 'opt', type: 'button', 'aria-pressed': 'false', onclick: () => {
+        picks[qi] = k;
+        btns.forEach(b => { b.classList.remove('sel', 'right', 'wrong'); b.setAttribute('aria-pressed', 'false'); });
+        const me = btns[order.indexOf(k)]; me.classList.add('sel'); me.setAttribute('aria-pressed', 'true');
+      } }, it.options[k]));
+      return { el: h('div', { class: 'q' }, h('p', { class: 'q-text' }, it.q), h('div', { class: 'row' }, btns)), btns, order };
+    });
+    return {
+      el: h('div', { class: 'qs' }, groups.map(g => g.el)),
+      check() {
+        if (picks.some(p => p === null)) return 'Ihr habt noch nicht alle Fragen beantwortet.';
+        let ok = true;
+        t.items.forEach((it, qi) => {
+          const b = groups[qi].btns[groups[qi].order.indexOf(picks[qi])];
+          b.classList.remove('sel');
+          if (picks[qi] === it.a) b.classList.add('right'); else { b.classList.add('wrong'); ok = false; }
+        });
+        return ok;
+      }
+    };
+  },
+  pick(t) {
+    const sel = new Set();
+    const chips = shuffle(t.words).map(w => h('button', { class: 'chip', type: 'button', 'aria-pressed': 'false', onclick: (e) => {
+      const b = e.currentTarget; b.classList.remove('right', 'wrong');
+      if (sel.has(w)) { sel.delete(w); b.classList.remove('sel'); b.setAttribute('aria-pressed', 'false'); }
+      else { sel.add(w); b.classList.add('sel'); b.setAttribute('aria-pressed', 'true'); }
+    }, 'data-w': w }, w));
+    return {
+      el: h('div', { class: 'chips' }, chips),
+      check() {
+        let wrong = false;
+        chips.forEach(b => { const w = b.dataset.w; if (sel.has(w)) { b.classList.remove('sel'); b.classList.add(t.correct.includes(w) ? 'right' : 'wrong'); if (!t.correct.includes(w)) wrong = true; } });
+        const missing = t.correct.filter(w => !sel.has(w)).length;
+        if (wrong) return 'Ein rotes Wort hat kein au. Tippt es noch einmal an.';
+        if (missing) return `Es fehlen noch ${missing === 1 ? 'ein Wort' : missing + ' Wörter'} mit au.`;
+        return true;
+      }
+    };
+  },
+  order(t) {
+    let seq = [];
+    const shown = shuffle(t.sentences.map((_, k) => k));
+    const items = shown.map(k => {
+      const num = h('span', { class: 'num' }, '');
+      const b = h('button', { class: 'sent', type: 'button', onclick: () => {
+        items.forEach(x => x.b.classList.remove('right', 'wrong'));
+        if (seq.includes(k)) seq = seq.filter(x => x !== k); else seq.push(k);
+        paint();
+      } }, num, h('span', {}, t.sentences[k]));
+      return { k, b, num };
+    });
+    function paint() { items.forEach(it => { const p = seq.indexOf(it.k); it.num.textContent = p === -1 ? '' : p + 1; it.b.classList.toggle('sel', p !== -1); }); }
+    return {
+      el: h('div', { class: 'sents' }, items.map(i => i.b),
+        h('div', { class: 'row' }, h('button', { class: 'btn ghost', type: 'button', onclick: () => { seq = []; items.forEach(x => x.b.classList.remove('right', 'wrong')); paint(); } }, 'Nummern löschen'))),
+      check() {
+        if (seq.length < t.sentences.length) return 'Gebt jedem Satz eine Nummer.';
+        let ok = true;
+        items.forEach(it => { const p = seq.indexOf(it.k); it.b.classList.add(p === it.k ? 'right' : 'wrong'); if (p !== it.k) ok = false; });
+        return ok || 'Die roten Sätze stehen noch an der falschen Stelle. Tippt auf „Nummern löschen“ und versucht es noch einmal.';
+      }
+    };
+  },
+  syll(t) {
+    const all = t.words.flat().map((s, id) => ({ s, id }));
+    let pool = shuffle(all);
+    const slots = t.words.map(() => []);
+    let active = 0;
+    const poolEl = h('div', { class: 'pool', 'aria-label': 'Silben' });
+    const slotsEl = h('div', { class: 'slots' });
+    function paint() {
+      poolEl.innerHTML = '';
+      pool.forEach(p => poolEl.append(h('button', { class: 'syl', type: 'button', onclick: () => {
+        slots[active].push(p); pool = pool.filter(x => x !== p);
+        slotEls.forEach(e => e.classList.remove('right', 'wrong')); paint();
+      } }, p.s)));
+      if (!pool.length) poolEl.append(h('span', { class: 'tip' }, 'Alle Silben sind verteilt.'));
+      slotsEl.innerHTML = '';
+      slotEls = slots.map((sl, i) => {
+        const el = h('div', { class: 'slot' + (i === active ? ' active' : ''), role: 'button', tabindex: '0', 'aria-label': `Wort ${i + 1}`,
+          onclick: () => { active = i; paint(); },
+          onkeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); active = i; paint(); } } },
+          h('span', { class: 'label' }, `Wort ${i + 1}`),
+          sl.map(p => h('button', { class: 'syl', type: 'button', 'aria-label': `${p.s} zurücklegen`, onclick: (e) => {
+            e.stopPropagation(); slots[i].splice(slots[i].indexOf(p), 1); pool.push(p); active = i; paint();
+          } }, p.s)));
+        slotsEl.append(el); return el;
+      });
+    }
+    let slotEls = [];
+    paint();
+    return {
+      el: h('div', { class: 'qs', style: 'display:grid;gap:14px' }, slotsEl, h('p', { class: 'tip' }, 'Silben:'), poolEl,
+        h('p', { class: 'tip' }, 'Eine Silbe im Wort-Feld antippen legt sie zurück.')),
+      check() {
+        if (pool.length) return 'Verteilt zuerst alle Silben.';
+        const targets = t.words.map(w => w.join(''));
+        const left = targets.slice(); let ok = true;
+        slots.forEach((sl, i) => {
+          const w = sl.map(p => p.s).join(''); const k = left.indexOf(w);
+          if (k !== -1) { left.splice(k, 1); slotEls[i].classList.add('right'); } else { slotEls[i].classList.add('wrong'); ok = false; }
+        });
+        return ok || 'Die roten Wörter gibt es so nicht. Tippt eine Silbe an, um sie zurückzulegen.';
+      }
+    };
+  }
+};
+
+function renderFinal() {
+  const letters = TASKS.map(t => t.letter);
+  let built = [];
+  const door = h('div', {}); door.innerHTML = doorSVG(state.done);
+  const msg = h('p', { class: 'msg', hidden: true, role: 'status' });
+  const slotRow = h('div', { class: 'locks' });
+  const tileRow = h('div', { class: 'pool', style: 'justify-content:center' });
+  const names = state.names.filter(Boolean);
+  function paint() {
+    slotRow.innerHTML = '';
+    for (let i = 0; i < WORD.length; i++) {
+      const b = built[i];
+      slotRow.append(b != null
+        ? h('button', { class: 'lock got', type: 'button', 'aria-label': `${letters[b]} zurücklegen`, onclick: () => { built.splice(i, 1); msg.hidden = true; paint(); } }, letters[b])
+        : h('div', { class: 'lock' }, ''));
+    }
+    tileRow.innerHTML = '';
+    letters.forEach((l, k) => { if (!built.includes(k)) tileRow.append(h('button', { class: 'tile', type: 'button', onclick: () => {
+      built.push(k); paint();
+      if (built.length === WORD.length) {
+        if (built.map(x => letters[x]).join('') === WORD) win(); else { msg.hidden = false; msg.className = 'msg bad'; msg.textContent = 'Die Tür bleibt zu. Tippt einen Buchstaben an, um ihn zurückzulegen.'; }
+      }
+    } }, l)); });
+  }
+  function win() {
+    state.done = true; save();
+    door.querySelector('svg').classList.add('open');
+    msg.hidden = false; msg.className = 'msg good';
+    msg.textContent = (names.length ? names.join(' und ') + ': ' : '') + 'Geschafft! Die Tür ist offen. Zeigt eurer Lehrerin das Lösungswort.';
+    tileRow.hidden = true;
+  }
+  if (state.done) { built = WORD.split('').map(c => letters.indexOf(c)); }
+  paint();
+  app.append(
+    h('section', { class: 'card hero' },
+      h('p', { class: 'eyebrow' }, 'Die Kellertür'),
+      h('h2', {}, state.done ? 'Ihr seid frei!' : 'Alle Buchstaben gefunden!'),
+      h('p', { class: 'task-text' }, 'Was ruft Pit ganz am Ende? „Im Keller ist ein …“ Legt die Buchstaben in die richtige Reihenfolge.'),
+      slotRow, tileRow, msg, door),
+    resetControl()
+  );
+  if (state.done) win();
+}
+
+render();
+</script>
+</body></html>
