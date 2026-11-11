@@ -1,0 +1,466 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>[hidden]{display:none!important}html,body{margin:0}</style>
+<title>Flucht aus dem Keller – Fördergruppe</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Fredoka:wght@500;600;700&display=swap">
+<style>
+/* Layout: dark cellar page; each riddle is a light paper sheet with blue/red syllable colouring like the class worksheets */
+:root {
+  --bg: #120f18;
+  --panel: #1e1a27;
+  --line: #3a3350;
+  --fg: #f4ecd8;
+  --muted: #b9b0c9;
+  --paper: #fbfaf5;
+  --paper-line: #d9d6cc;
+  --ink: #1f2a44;
+  --ink-muted: #5b6275;
+  --syl-a: #1f3fa8;
+  --syl-b: #c8202e;
+  --torch: #f3c96a;
+  --torch-dark: #b07d12;
+  --torch-ink: #2a1d05;
+  --eye: #d8f24a;
+  --right: #1d7a35;
+  --right-bg: #dff3e3;
+  --wrong: #b3261e;
+  --wrong-bg: #fbe1de;
+  --font-text: "Andika", "Comic Sans MS", system-ui, sans-serif;
+  --font-head: "Fredoka", "Andika", system-ui, sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { background: var(--bg); }
+body {
+  color: var(--fg); font-family: var(--font-text); font-size: 26px; line-height: 1.45;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 16px 40px; min-height: 100%; overflow-x: hidden;
+}
+.wrap { max-width: 820px; margin: 0 auto; position: relative; z-index: 1; display: grid; gap: 18px; }
+h1, h2 { font-family: var(--font-head); text-wrap: balance; margin: 0; font-weight: 600; }
+h1 { font-size: clamp(34px, 6vw, 50px); line-height: 1.1; }
+h2 { font-size: clamp(28px, 5vw, 36px); line-height: 1.15; }
+p { margin: 0; }
+button { font: inherit; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+button:focus-visible, input:focus-visible, [role="button"]:focus-visible { outline: 3px solid var(--torch); outline-offset: 3px; }
+
+.s-a { color: var(--syl-a); } .s-b { color: var(--syl-b); } .p { color: var(--ink); }
+
+.eyes-bg { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+.pair { position: absolute; display: flex; gap: 14px; opacity: .55; animation: blink 6s infinite; }
+.pair i { width: 22px; height: 12px; border-radius: 50%; background: radial-gradient(circle at 50% 50%, #111 0 18%, var(--eye) 22% 100%); box-shadow: 0 0 18px 4px rgba(216,242,74,.35); display: block; }
+.pair.p2 { animation-delay: 2.2s; animation-duration: 7.5s; transform: scale(.7); }
+@keyframes blink { 0%, 92%, 100% { filter: none; } 94%, 96% { filter: brightness(.2); } }
+
+.locks { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; max-width: 520px; width: 100%; justify-self: center; }
+.lock { aspect-ratio: 1; max-width: 100%; border-radius: 14px; border: 2px dashed var(--line); display: grid; place-items: center; font-family: var(--font-head); font-size: clamp(34px, 9vw, 60px); font-weight: 700; color: var(--muted); background: var(--panel); }
+.lock.got { border: 2px solid var(--eye); color: var(--eye); text-shadow: 0 0 14px rgba(216,242,74,.6); background: #23271a; }
+.lock.now { border-color: var(--torch); border-style: solid; }
+.lock span { font-size: .5em; opacity: .7; }
+
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 22px; padding: clamp(18px, 4vw, 30px); display: grid; gap: 20px; }
+.sheet { background: var(--paper); color: var(--ink); border: 0; box-shadow: 0 10px 40px rgba(0,0,0,.5); }
+.eyebrow { font-family: var(--font-head); font-size: 18px; letter-spacing: .06em; text-transform: uppercase; color: var(--torch); }
+.sheet .eyebrow { color: var(--torch-dark); }
+.sheet h2 { color: var(--ink); }
+.task-text { font-size: 28px; }
+.tip { font-size: 18px; color: var(--muted); }
+.sheet .tip { color: var(--ink-muted); }
+
+.btn { min-height: 64px; padding: 10px 28px; border-radius: 16px; border: 0; background: var(--torch); color: var(--torch-ink); font-family: var(--font-head); font-weight: 600; font-size: 26px; box-shadow: 0 4px 0 var(--torch-dark); }
+.btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--torch-dark); }
+.btn.ghost { background: transparent; color: var(--muted); box-shadow: none; border: 2px solid var(--line); font-size: 18px; min-height: 48px; padding: 6px 16px; }
+.row { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+
+.q { display: grid; gap: 12px; padding-bottom: 18px; border-bottom: 2px dashed var(--paper-line); }
+.q:last-child { border-bottom: 0; padding-bottom: 0; }
+.q-text { font-size: 30px; font-weight: 700; }
+.opt, .chip, .sent { min-height: 68px; padding: 8px 22px; border-radius: 16px; border: 3px solid var(--paper-line); background: #fff; font-size: 30px; text-align: left; }
+.opt.sel, .chip.sel, .sent.sel { border-color: var(--torch-dark); background: #fff3d3; }
+.right { border-color: var(--right) !important; background: var(--right-bg) !important; }
+.wrong { border-color: var(--wrong) !important; background: var(--wrong-bg) !important; }
+.mark { font-family: var(--font-head); font-weight: 700; margin-left: 10px; }
+.right .mark::after { content: "✓"; color: var(--right); }
+.wrong .mark::after { content: "✗"; color: var(--wrong); }
+.chips { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 14px; }
+.chip { text-align: center; font-size: 36px; }
+.sents { display: grid; gap: 14px; }
+.sent { display: flex; gap: 16px; align-items: center; }
+.num { flex: none; width: 52px; height: 52px; border-radius: 50%; border: 3px dashed var(--paper-line); display: grid; place-items: center; font-family: var(--font-head); font-weight: 700; color: var(--torch-dark); }
+.sent.sel .num { border: 3px solid var(--torch-dark); background: var(--torch); color: var(--torch-ink); }
+
+.msg { font-size: 24px; padding: 12px 16px; border-radius: 14px; }
+.msg.bad { background: var(--wrong-bg); color: var(--wrong); }
+.msg.good { background: var(--right-bg); color: var(--right); }
+
+.hero { display: grid; gap: 18px; justify-items: start; }
+.door { width: 100%; max-width: 340px; justify-self: center; display: block; }
+.names { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; width: 100%; }
+.names label { display: grid; gap: 6px; font-size: 18px; color: var(--muted); }
+.names input { font: inherit; font-size: 26px; color: var(--fg); background: #29243a; border: 2px solid var(--line); border-radius: 12px; padding: 10px 14px; min-height: 58px; width: 100%; min-width: 0; }
+.pool { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; min-height: 80px; padding: 10px; border-radius: 14px; background: #15121c; }
+.tile { min-height: 76px; min-width: 76px; border-radius: 14px; border: 2px solid var(--line); background: #29243a; font-family: var(--font-head); font-weight: 700; font-size: 40px; }
+
+.overlay { position: fixed; inset: 0; z-index: 5; background: rgba(5,4,8,.92); display: grid; place-items: center; padding: 24px max(16px, env(safe-area-inset-right, 0px)) 24px max(16px, env(safe-area-inset-left, 0px)); }
+.reveal { display: grid; gap: 18px; justify-items: center; text-align: center; }
+.big-letter { font-family: var(--font-head); font-weight: 700; font-size: clamp(130px, 32vw, 220px); line-height: 1; color: var(--eye); text-shadow: 0 0 40px rgba(216,242,74,.7); animation: glow 1.2s ease-out; }
+@keyframes glow { from { transform: scale(.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.qr { width: min(70vmin, 520px); max-width: 100%; image-rendering: pixelated; background: #fff; padding: 16px; border-radius: 16px; }
+.confirm { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; font-size: 18px; color: var(--muted); }
+
+.door-leaf { transform-origin: 0% 50%; transform-box: fill-box; transition: transform 1.6s ease-in-out; }
+.door.open .door-leaf { transform: scaleX(.12); }
+.mouse { opacity: 0; transition: opacity .8s 1s; }
+.door.open .mouse { opacity: 1; }
+
+@media (max-width: 520px) {
+  body { font-size: 22px; }
+  .q-text, .task-text { font-size: 25px; }
+  .opt, .sent { font-size: 25px; }
+  .chip { font-size: 30px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pair, .big-letter, .door-leaf, .mouse { animation: none !important; transition: none !important; }
+}
+</style>
+</head><body>
+
+<div class="eyes-bg" aria-hidden="true">
+  <div class="pair" style="left:6%; top:74%"><i></i><i></i></div>
+  <div class="pair p2" style="right:8%; top:20%"><i></i><i></i></div>
+</div>
+
+<main class="wrap" id="app"></main>
+
+<script>
+// Syllables are separated with | and coloured blue/red like the class worksheets.
+const TASKS = [
+  {
+    letter: 'U', title: 'Wer? Was?',
+    text: 'Tippt die rich|ti|ge Ant|wort an.',
+    type: 'mc',
+    items: [
+      { q: 'Wer ist am Au|to?', options: ['Lau|ra und Pit', 'Mi|a und Tom'], a: 0 },
+      { q: 'Was nimmt Lau|ra?', options: ['ein Buch', 'ei|ne Kis|te'], a: 1 },
+      { q: 'Was nimmt Pit?', options: ['Kar|tof|feln', 'Ba|na|nen'], a: 0 }
+    ]
+  },
+  {
+    letter: 'M', title: 'Im Keller',
+    text: 'Tippt die rich|ti|ge Ant|wort an.',
+    type: 'mc',
+    items: [
+      { q: 'Wer geht in den Kel|ler?', options: ['Lau|ra', 'Pit'], a: 1 },
+      { q: 'Wo ist es fins|ter?', options: ['im Gar|ten', 'im Kel|ler'], a: 1 },
+      { q: 'Was ruft Pit?', options: ['„Ein Mons|ter!“', '„Ein Hund!“'], a: 0 }
+    ]
+  },
+  {
+    letter: 'S', title: 'Au weia!',
+    text: 'Tippt al|le Wör|ter mit au an.',
+    type: 'pick',
+    words: ['Au|to', 'Kis|te', 'Lau|ra', 'Pit', 'Maus', 'Ma|ma'],
+    correct: ['Au|to', 'Lau|ra', 'Maus']
+  },
+  {
+    letter: 'A', title: 'Was kommt zuerst?',
+    text: 'Tippt die Sät|ze an: zu|erst 1, dann 2, dann 3.',
+    type: 'order',
+    sentences: [
+      'Lau|ra und Pit sind am Au|to.',
+      'Pit geht in den Kel|ler.',
+      'Pit ruft: „Ma|ma! Ein Mons|ter!“'
+    ]
+  }
+];
+const WORD = 'MAUS';
+const KEY = 'keller-escape-foerder-v1';
+const QR = '';
+
+let state = load();
+function fresh() { return { names: ['', ''], solved: TASKS.map(() => false), screen: 'start', done: false }; }
+function load() {
+  try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.solved && s.solved.length === TASKS.length) return s; } catch (e) {}
+  return fresh();
+}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+
+const app = document.getElementById('app');
+const h = (tag, attrs = {}, ...kids) => {
+  const el = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') el.className = v;
+    else if (k.startsWith('on')) el.addEventListener(k.slice(2), v);
+    else if (v !== false && v != null) el.setAttribute(k, v);
+  }
+  for (const c of kids.flat()) if (c != null) el.append(c.nodeType ? c : document.createTextNode(c));
+  return el;
+};
+const plain = (t) => t.replace(/\|/g, '');
+// Turn "Lau|ra und Pit." into coloured syllable spans
+function S(text) {
+  const frag = document.createDocumentFragment();
+  text.split(' ').forEach((tok, wi) => {
+    if (wi) frag.append(' ');
+    const m = tok.match(/^([^\p{L}|]*)([\p{L}|]*)([^\p{L}|]*)$/u);
+    if (!m) { frag.append(h('span', { class: 'p' }, plain(tok))); return; }
+    if (m[1]) frag.append(h('span', { class: 'p' }, m[1]));
+    m[2].split('|').forEach((syl, i) => frag.append(h('span', { class: i % 2 ? 's-b' : 's-a' }, syl)));
+    if (m[3]) frag.append(h('span', { class: 'p' }, m[3]));
+  });
+  return frag;
+}
+const shuffle = (arr) => { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const nextOpen = () => state.solved.findIndex(s => !s);
+
+function locks(current) {
+  return h('div', { class: 'locks', 'aria-label': 'Gefundene Buchstaben' },
+    TASKS.map((t, i) => h('div', { class: 'lock' + (state.solved[i] ? ' got' : '') + (i === current ? ' now' : '') },
+      state.solved[i] ? t.letter : h('span', {}, String(i + 1)))));
+}
+
+function doorSVG(open) {
+  return `<svg class="door${open ? ' open' : ''}" viewBox="0 0 240 300" role="img" aria-label="Kellertür">
+    <rect x="10" y="10" width="220" height="290" rx="8" fill="#0a090d" stroke="#3a3350" stroke-width="6"/>
+    <g class="mouse">
+      <circle cx="72" cy="140" r="30" fill="#9a93a6" stroke="#2b1d14" stroke-width="4"/><circle cx="72" cy="140" r="17" fill="#f2a7b5"/>
+      <circle cx="168" cy="140" r="30" fill="#9a93a6" stroke="#2b1d14" stroke-width="4"/><circle cx="168" cy="140" r="17" fill="#f2a7b5"/>
+      <ellipse cx="120" cy="190" rx="66" ry="52" fill="#b3adbd" stroke="#2b1d14" stroke-width="4"/>
+      <circle cx="120" cy="214" r="9" fill="#e86d86" stroke="#2b1d14" stroke-width="3"/>
+      <g stroke="#2b1d14" stroke-width="3" stroke-linecap="round"><path d="M108 216 L64 206"/><path d="M108 220 L64 226"/><path d="M132 216 L176 206"/><path d="M132 220 L176 226"/></g>
+      <path d="M110 232 Q120 240 130 232" stroke="#2b1d14" stroke-width="3" fill="none" stroke-linecap="round"/>
+    </g>
+    <g><ellipse cx="97" cy="180" rx="15" ry="10" fill="#d8f24a"/><ellipse cx="143" cy="180" rx="15" ry="10" fill="#d8f24a"/>
+    <ellipse cx="97" cy="180" rx="4" ry="9" fill="#0a090d"/><ellipse cx="143" cy="180" rx="4" ry="9" fill="#0a090d"/></g>
+    <g class="door-leaf"><rect x="20" y="20" width="200" height="275" rx="4" fill="#6b4a2a" stroke="#3e2914" stroke-width="5"/>
+    <rect x="45" y="45" width="150" height="95" rx="6" fill="none" stroke="#3e2914" stroke-width="5"/>
+    <rect x="45" y="160" width="150" height="110" rx="6" fill="none" stroke="#3e2914" stroke-width="5"/>
+    <circle cx="190" cy="160" r="9" fill="#f3c96a"/><rect x="186" y="170" width="8" height="18" rx="3" fill="#2a1d05"/></g>
+  </svg>`;
+}
+
+function render() {
+  app.innerHTML = '';
+  if (state.screen === 'start') return renderStart();
+  if (state.screen === 'final') return renderFinal();
+  renderTask(state.screen);
+}
+
+function resetControl() {
+  const box = h('div', { class: 'confirm' });
+  const ask = h('button', { class: 'btn ghost', type: 'button', onclick: () => {
+    box.innerHTML = '';
+    box.append('Alles löschen und neu anfangen?',
+      h('button', { class: 'btn ghost', type: 'button', onclick: () => { state = fresh(); save(); render(); } }, 'Ja, neu starten'),
+      h('button', { class: 'btn ghost', type: 'button', onclick: () => { box.innerHTML = ''; box.append(ask); } }, 'Nein'));
+  } }, 'Für das nächste Team: neu starten');
+  box.append(ask);
+  return box;
+}
+
+function showQR() {
+  const ov = h('div', { class: 'overlay', role: 'dialog', 'aria-label': 'QR-Code' },
+    h('div', { class: 'reveal' },
+      h('h2', {}, 'Flucht aus dem Keller'),
+      h('img', { src: QR, alt: 'QR-Code zum Escape-Room', class: 'qr' }),
+      h('p', { class: 'task-text' }, 'Kamera auf den Code halten!'),
+      h('button', { class: 'btn', type: 'button', onclick: () => ov.remove() }, 'Schließen')));
+  document.body.append(ov);
+  ov.querySelector('button').focus();
+}
+
+function renderStart() {
+  const started = state.solved.some(Boolean);
+  const n1 = h('input', { id: 'name1', value: state.names[0], placeholder: 'Name', autocomplete: 'off' });
+  const n2 = h('input', { id: 'name2', value: state.names[1], placeholder: 'Name', autocomplete: 'off' });
+  const door = h('div', { style: 'width:100%' }); door.innerHTML = doorSVG(false);
+  app.append(
+    locks(-1),
+    h('section', { class: 'card hero' },
+      h('p', { class: 'eyebrow' }, 'Escape-Room · Im Keller'),
+      h('h1', {}, 'Flucht aus dem Keller'),
+      door,
+      h('div', { class: 'card sheet', style: 'width:100%' },
+        h('p', { class: 'task-text' }, S('Pit ist im Kel|ler. Die Tür ist zu!')),
+        h('p', { class: 'task-text' }, S('Löst 4 Rät|sel. Dann geht die Tür auf.'))),
+      h('div', { class: 'names' },
+        h('label', { for: 'name1' }, 'Kind 1', n1),
+        h('label', { for: 'name2' }, 'Kind 2', n2)),
+      h('div', { class: 'row' },
+        h('button', { class: 'btn', type: 'button', onclick: () => {
+          state.names = [n1.value.trim(), n2.value.trim()];
+          const i = nextOpen(); state.screen = i === -1 ? 'final' : i; save(); render();
+        } }, started ? 'Weiterspielen' : 'Los geht’s!')),
+      started ? resetControl() : null
+    ),
+    ...(QR ? [h('div', { class: 'row' }, h('button', { class: 'btn ghost', type: 'button', onclick: showQR }, 'QR-Code für die Tafel zeigen'))] : [])
+  );
+}
+
+function renderTask(i) {
+  const t = TASKS[i];
+  const msg = h('p', { class: 'msg', hidden: true, role: 'status' });
+  const ctl = builders[t.type](t);
+  app.append(
+    locks(i),
+    h('section', { class: 'card sheet' },
+      h('p', { class: 'eyebrow' }, `Rätsel ${i + 1} von ${TASKS.length}`),
+      h('h2', {}, t.title),
+      h('p', { class: 'task-text' }, S(t.text)),
+      ctl.el,
+      msg,
+      h('div', { class: 'row' },
+        h('button', { class: 'btn', type: 'button', onclick: () => {
+          const res = ctl.check();
+          if (res === true) { state.solved[i] = true; save(); showLetter(i); }
+          else { msg.hidden = false; msg.className = 'msg bad'; msg.textContent = res || 'Rot ist noch falsch. Lest noch einmal nach.'; }
+        } }, 'Prüfen')),
+      h('p', { class: 'tip' }, 'Tipp: Lest noch einmal den Text „Im Keller“.')
+    ),
+    h('div', { class: 'row' }, h('button', { class: 'btn ghost', type: 'button', onclick: () => { state.screen = 'start'; save(); render(); } }, 'Zurück zum Start'))
+  );
+}
+
+function showLetter(i) {
+  const t = TASKS[i];
+  const next = nextOpen();
+  const ov = h('div', { class: 'overlay', role: 'dialog', 'aria-label': 'Buchstabe gefunden' },
+    h('div', { class: 'reveal' },
+      h('h2', {}, 'Richtig!'),
+      h('p', { class: 'task-text' }, 'Euer Buchstabe:'),
+      h('div', { class: 'big-letter' }, t.letter),
+      h('button', { class: 'btn', type: 'button', onclick: () => {
+        ov.remove(); state.screen = next === -1 ? 'final' : next; save(); render();
+      } }, next === -1 ? 'Zur Tür' : 'Weiter')));
+  document.body.append(ov);
+  ov.querySelector('button').focus();
+}
+
+const builders = {
+  mc(t) {
+    const picks = t.items.map(() => null);
+    const groups = t.items.map((it, qi) => {
+      const order = shuffle(it.options.map((_, k) => k));
+      const btns = order.map(k => h('button', { class: 'opt', type: 'button', 'aria-pressed': 'false', 'aria-label': plain(it.options[k]), onclick: () => {
+        picks[qi] = k;
+        btns.forEach(b => { b.classList.remove('sel', 'right', 'wrong'); b.setAttribute('aria-pressed', 'false'); });
+        const me = btns[order.indexOf(k)]; me.classList.add('sel'); me.setAttribute('aria-pressed', 'true');
+      } }, S(it.options[k]), h('span', { class: 'mark', 'aria-hidden': 'true' })));
+      return { el: h('div', { class: 'q' }, h('p', { class: 'q-text' }, S(it.q)), h('div', { class: 'row' }, btns)), btns, order };
+    });
+    return {
+      el: h('div', { class: 'qs', style: 'display:grid;gap:18px' }, groups.map(g => g.el)),
+      check() {
+        if (picks.some(p => p === null)) return 'Beantwortet zuerst alle Fragen.';
+        let ok = true;
+        t.items.forEach((it, qi) => {
+          const b = groups[qi].btns[groups[qi].order.indexOf(picks[qi])];
+          b.classList.remove('sel');
+          if (picks[qi] === it.a) b.classList.add('right'); else { b.classList.add('wrong'); ok = false; }
+        });
+        return ok || 'Rot ist noch falsch. Tippt die andere Antwort an.';
+      }
+    };
+  },
+  pick(t) {
+    const sel = new Set();
+    const chips = shuffle(t.words).map(w => h('button', { class: 'chip', type: 'button', 'aria-pressed': 'false', 'aria-label': plain(w), 'data-w': w, onclick: (e) => {
+      const b = e.currentTarget; b.classList.remove('right', 'wrong');
+      if (sel.has(w)) { sel.delete(w); b.classList.remove('sel'); b.setAttribute('aria-pressed', 'false'); }
+      else { sel.add(w); b.classList.add('sel'); b.setAttribute('aria-pressed', 'true'); }
+    } }, S(w), h('span', { class: 'mark', 'aria-hidden': 'true' })));
+    return {
+      el: h('div', { class: 'chips' }, chips),
+      check() {
+        let wrong = false;
+        chips.forEach(b => { const w = b.dataset.w; if (sel.has(w)) { b.classList.remove('sel'); const ok = t.correct.includes(w); b.classList.add(ok ? 'right' : 'wrong'); if (!ok) wrong = true; } });
+        const missing = t.correct.filter(w => !sel.has(w)).length;
+        if (wrong) return 'Das rote Wort hat kein au.';
+        if (missing) return `Es fehlt noch ${missing === 1 ? 'ein Wort' : missing + ' Wörter'} mit au.`;
+        return true;
+      }
+    };
+  },
+  order(t) {
+    let seq = [];
+    let shown = shuffle(t.sentences.map((_, k) => k));
+    if (shown.every((k, i) => k === i)) shown = [1, 2, 0];
+    const items = shown.map(k => {
+      const num = h('span', { class: 'num' }, '');
+      const b = h('button', { class: 'sent', type: 'button', 'aria-label': plain(t.sentences[k]), onclick: () => {
+        items.forEach(x => x.b.classList.remove('right', 'wrong'));
+        if (seq.includes(k)) seq = seq.filter(x => x !== k); else seq.push(k);
+        paint();
+      } }, num, h('span', {}, S(t.sentences[k])));
+      return { k, b, num };
+    });
+    function paint() { items.forEach(it => { const p = seq.indexOf(it.k); it.num.textContent = p === -1 ? '' : p + 1; it.b.classList.toggle('sel', p !== -1); }); }
+    return {
+      el: h('div', { class: 'sents' }, items.map(i => i.b),
+        h('div', { class: 'row' }, h('button', { class: 'btn ghost', type: 'button', style: 'color:var(--ink-muted);border-color:var(--paper-line)', onclick: () => { seq = []; items.forEach(x => x.b.classList.remove('right', 'wrong')); paint(); } }, 'Nummern löschen'))),
+      check() {
+        if (seq.length < t.sentences.length) return 'Gebt jedem Satz eine Nummer.';
+        let ok = true;
+        items.forEach(it => { const p = seq.indexOf(it.k); it.b.classList.add(p === it.k ? 'right' : 'wrong'); if (p !== it.k) ok = false; });
+        return ok || 'Rot ist noch falsch. Tippt auf „Nummern löschen“.';
+      }
+    };
+  }
+};
+
+function renderFinal() {
+  const letters = TASKS.map(t => t.letter);
+  let built = [];
+  const door = h('div', { style: 'width:100%' }); door.innerHTML = doorSVG(state.done);
+  const msg = h('p', { class: 'msg', hidden: true, role: 'status' });
+  const slotRow = h('div', { class: 'locks' });
+  const tileRow = h('div', { class: 'pool' });
+  const names = state.names.filter(Boolean);
+  function paint() {
+    slotRow.innerHTML = '';
+    for (let i = 0; i < WORD.length; i++) {
+      const b = built[i];
+      slotRow.append(b != null
+        ? h('button', { class: 'lock got', type: 'button', 'aria-label': `${letters[b]} zurücklegen`, onclick: () => { if (state.done) return; built.splice(i, 1); msg.hidden = true; paint(); } }, letters[b])
+        : h('div', { class: 'lock' }, ''));
+    }
+    tileRow.innerHTML = '';
+    letters.forEach((l, k) => { if (!built.includes(k)) tileRow.append(h('button', { class: 'tile', type: 'button', onclick: () => {
+      built.push(k); paint();
+      if (built.length === WORD.length) {
+        if (built.map(x => letters[x]).join('') === WORD) win();
+        else { msg.hidden = false; msg.className = 'msg bad'; msg.textContent = 'Die Tür bleibt zu. Tippt oben einen Buchstaben an, um ihn zurückzulegen.'; }
+      }
+    } }, l)); });
+  }
+  function win() {
+    state.done = true; save();
+    door.querySelector('svg').classList.add('open');
+    msg.hidden = false; msg.className = 'msg good';
+    msg.textContent = (names.length ? names.join(' und ') + ': ' : '') + 'Geschafft! Im Keller ist kein Monster. Es ist eine Maus!';
+    tileRow.hidden = true;
+  }
+  if (state.done) built = WORD.split('').map(c => letters.indexOf(c));
+  paint();
+  app.append(
+    h('section', { class: 'card hero' },
+      h('p', { class: 'eyebrow' }, 'Die Kellertür'),
+      h('h2', {}, state.done ? 'Die Tür ist auf!' : 'Alle Buchstaben gefunden!'),
+      h('div', { class: 'card sheet', style: 'width:100%' },
+        h('p', { class: 'task-text' }, S('Was ist im Kel|ler wirk|lich?')),
+        h('p', { class: 'tip' }, 'Legt die Buchstaben in die richtige Reihenfolge.')),
+      slotRow, tileRow, msg, door),
+    resetControl()
+  );
+  if (state.done) win();
+}
+
+render();
+</script>
+</body></html>
